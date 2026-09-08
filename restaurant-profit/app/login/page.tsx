@@ -14,31 +14,58 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  event.preventDefault();
 
-    setError("");
+  setError("");
 
-    if (!phone.trim() || !password) {
-      setError("Please enter your phone number and password.");
+  if (!phone.trim() || !password) {
+    setError("Please enter your phone number and password.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        phone,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.error || "Invalid phone number or password.");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      phone: phone.trim(),
-      password,
+    // Store the Supabase session in the browser.
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
     });
 
-    if (error) {
-      setError("Invalid phone number or password.");
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+      setError("Login succeeded, but the session could not be created.");
       setLoading(false);
       return;
     }
 
     router.replace("/dashboard");
     router.refresh();
+  } catch (error) {
+    console.error("Login request failed:", error);
+    setError("Unable to connect to the server.");
+    setLoading(false);
   }
+}
 
   return (
     <main className="min-h-screen bg-stone-50 px-5 py-10">
