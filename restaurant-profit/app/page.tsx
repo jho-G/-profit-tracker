@@ -1,21 +1,16 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("restaurants")
-    .select("*");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return (
-    <main className="p-8">
-      <h1 className="text-2xl font-bold">
-        Restaurant Profit Tracker
-      </h1>
+  if (user) {
+    redirect("/dashboard");
+  }
 
-      <pre className="mt-4">
-        {JSON.stringify({ data, error }, null, 2)}
-      </pre>
-    </main>
-  );
+  redirect("/login");
 }
