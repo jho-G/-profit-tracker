@@ -1,12 +1,16 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+  function getSupabase() {
+    if (!supabaseRef.current) supabaseRef.current = createClient();
+    return supabaseRef.current;
+  }
 
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +50,7 @@ export default function LoginPage() {
     }
 
     // Store the Supabase session in the browser.
-    const { error: sessionError } = await supabase.auth.setSession({
+    const { error: sessionError } = await getSupabase().auth.setSession({
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
     });
