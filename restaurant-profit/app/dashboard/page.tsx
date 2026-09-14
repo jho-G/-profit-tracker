@@ -101,7 +101,13 @@ export default async function DashboardPage() {
               </p>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href="/dashboard/products"
+                className="rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+              >
+                Manage Products
+              </a>
               <LogoutButton />
             </div>
           </div>
