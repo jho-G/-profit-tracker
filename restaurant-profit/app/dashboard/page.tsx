@@ -108,6 +108,12 @@ export default async function DashboardPage() {
               >
                 Manage Products
               </a>
+              <a
+                href="/dashboard/sales"
+                className="rounded-xl bg-stone-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+              >
+                Sales
+              </a>
               <LogoutButton />
             </div>
           </div>
