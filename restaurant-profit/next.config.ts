@@ -32,6 +32,9 @@ function loadEnvLocal(): Record<string, string> {
 
 const nextConfig: NextConfig = {
   env: loadEnvLocal(),
+  turbopack: {
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;
