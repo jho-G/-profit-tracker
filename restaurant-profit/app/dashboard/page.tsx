@@ -19,7 +19,11 @@ export default async function DashboardPage({
   const supabase = await createClient();
   const allParams = searchParams ? await searchParams : {};
   const tab = allParams.tab === "menu" ? "menu" : allParams.tab === "history" ? "history" : "sell";
-  const filter = allParams.filter ?? "today";
+  const filter = allParams.filter === "yesterday" || allParams.filter === "7d" || allParams.filter === "all" || allParams.filter === "custom"
+    ? allParams.filter
+    : allParams.start || allParams.end
+      ? "custom"
+      : "today";
 
   const {
     data: { user },
@@ -243,7 +247,7 @@ export default async function DashboardPage({
                     <div className="text-sm font-black text-stone-900">All-time profit</div>
                     <div className="mt-1 text-[28px] font-black text-green-700">{money.format(allProfit)}</div>
                   </div>
-                  <a href="/api/sales/export?filter=" className="rounded-xl border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 hover:bg-white">Export this view as CSV</a>
+                  <a href={`/api/sales/export?filter=${encodeURIComponent(filter)}${allParams.start ? `&start=${encodeURIComponent(allParams.start)}` : ""}${allParams.end ? `&end=${encodeURIComponent(allParams.end)}` : ""}`} className="rounded-xl border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 hover:bg-white">Export this view as CSV</a>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -314,10 +318,16 @@ function historyRecordsForFilter(sales: any[], filter: string, start?: string, e
   if (filter === "today") result = result.filter((sale) => sale.sold_at >= todayStart && sale.sold_at <= todayEnd);
   else if (filter === "yesterday") result = result.filter((sale) => sale.sold_at >= yesterdayStart && sale.sold_at < todayStart);
   else if (filter === "7d") result = result.filter((sale) => sale.sold_at >= sevenStart);
-  else if (filter === "custom" && start && end) {
-    const s = new Date(start).toISOString();
-    const e = new Date(end).toISOString();
-    result = result.filter((sale) => sale.sold_at >= s && sale.sold_at <= e);
+  else if (filter === "custom") {
+    const startDate = start ? new Date(start).toISOString() : null;
+    const endDate = end ? new Date(end + "T23:59:59").toISOString() : null;
+    result = result.filter((sale) => {
+      if (startDate && sale.sold_at < startDate) return false;
+      if (endDate && sale.sold_at > endDate) return false;
+      return true;
+    });
+  } else if (filter === "all") {
+    result = result;
   }
 
   return result;

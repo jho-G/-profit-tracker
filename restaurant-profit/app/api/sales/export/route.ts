@@ -32,6 +32,9 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url);
   const filter = url.searchParams.get("filter") ?? "all";
+  const start = url.searchParams.get("start") ?? "";
+  const end = url.searchParams.get("end") ?? "";
+
   const now = new Date();
   const base = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
   const startToday = base.toISOString();
@@ -52,10 +55,8 @@ export async function GET(request: Request) {
   } else if (filter === "7d") {
     query = query.gte("sold_at", startSeven);
   } else if (filter === "custom") {
-    const start = url.searchParams.get("start");
-    const end = url.searchParams.get("end");
     if (start) query = query.gte("sold_at", new Date(start).toISOString());
-    if (end) query = query.lte("sold_at", new Date(end).toISOString());
+    if (end) query = query.lte("sold_at", new Date(end + "T23:59:59").toISOString());
   }
 
   const { data: sales, error } = await query;
@@ -64,7 +65,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Sales export unavailable" }, { status: 400 });
   }
 
-  const header = ["Date", "Meal/Product", "Quantity", "Cost per unit", "Price per unit", "Profit"];
+  const header = ["Date", "Meal", "Quantity", "Cost per unit", "Price per unit", "Profit"];
   const rows = sales.map((sale) => [
     new Date(sale.sold_at).toLocaleString("en-ET"),
     sale.product_name_snapshot,

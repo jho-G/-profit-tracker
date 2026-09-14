@@ -43,6 +43,12 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     redirect("/dashboard/products");
   }
 
+  const { data: priceHistory, error: historyError } = await supabase
+    .from("product_price_history")
+    .select("id, created_at, old_cost_price, old_selling_price, new_cost_price, new_selling_price, changed_by")
+    .eq("product_id", id)
+    .order("created_at", { ascending: false });
+
   const profit = product.selling_price - product.cost_price;
 
   return (
@@ -89,12 +95,30 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             )}
 
+            <div className="rounded-xl bg-stone-50 px-4 py-4">
+              <span className="text-sm font-medium text-stone-500">Price history:</span>
+              <div className="mt-2 space-y-2">
+                {(priceHistory ?? []).length === 0 ? (
+                  <div className="text-sm text-stone-500">No price history recorded.</div>
+                ) : (
+                  (priceHistory ?? []).map((row) => (
+                    <div key={row.id} className="rounded-lg border border-stone-200 bg-white px-3 py-2">
+                      <div className="text-[11px] font-bold text-stone-500">{new Date(row.created_at).toLocaleDateString("en-ET")}</div>
+                      <div className="text-sm text-stone-700">
+                        cost {money.format(row.old_cost_price)} → {money.format(row.new_cost_price)} · sell {money.format(row.old_selling_price)} → {money.format(row.new_selling_price)}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
             <div className="flex gap-3">
               <Link href={`/dashboard/products/${product.id}/edit`} className="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
                 Edit Product
               </Link>
-              <Link href="/dashboard/products" className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800">
-                Back to Products
+              <Link href="/dashboard?tab=menu" className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800">
+                Back to Menu
               </Link>
             </div>
           </div>

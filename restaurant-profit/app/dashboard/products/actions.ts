@@ -81,8 +81,9 @@ export async function addProduct(formData: FormData) {
     redirect(`/dashboard/products/new?error=${encodeURIComponent(error.message)}`);
   }
 
+  revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
-  redirect("/dashboard/products");
+  redirect("/dashboard?tab=menu");
 }
 
 export async function updateProduct(productId: string, formData: FormData) {
@@ -156,9 +157,10 @@ export async function updateProduct(productId: string, formData: FormData) {
     redirect(`/dashboard/products/${productId}/edit?error=${encodeURIComponent(error.message)}`);
   }
 
+  revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
   revalidatePath(`/dashboard/products/${productId}/edit`);
-  redirect("/dashboard/products");
+  redirect("/dashboard?tab=menu");
 }
 
 export async function toggleProductStatus(productId: string, active: boolean) {
@@ -172,9 +174,10 @@ export async function toggleProductStatus(productId: string, active: boolean) {
     .eq("restaurant_id", owner.restaurant_id);
 
   if (error) {
-    redirect(`/dashboard/products?error=${encodeURIComponent(error.message)}`);
+    redirect(`/dashboard?tab=menu&error=${encodeURIComponent(error.message)}`);
   }
 
+  revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
-  redirect("/dashboard/products");
+  redirect("/dashboard?tab=menu");
 }
