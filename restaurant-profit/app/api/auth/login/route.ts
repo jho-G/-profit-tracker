@@ -1,6 +1,21 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+function normalizePhone(rawPhone?: string | null): string {
+  if (!rawPhone) return "";
+
+  const digits = rawPhone.replace(/[^\d]/g, "");
+  if (!digits) return "";
+
+  // Normalize a local 0-prefixed number like 091... to the E.164-like
+  // digits format stored in the live auth/user data: 2519...
+  if (digits.startsWith("0")) {
+    return `251${digits.slice(1)}`;
+  }
+
+  return digits;
+}
+
 export async function POST(request: Request) {
   try {
     const supabaseAdmin = createClient(
@@ -16,7 +31,7 @@ export async function POST(request: Request) {
 
     const { phone, password } = await request.json();
 
-    const normalizedPhone = phone?.replace(/\s+/g, "");
+    const normalizedPhone = normalizePhone(phone);
 
     if (!normalizedPhone || !password) {
       return NextResponse.json(
@@ -25,15 +40,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find the owner using the phone stored in profiles.
-    const { data: profile, error: profileError } = await supabaseAdmin
+    // Find the owner profile by owner role and compare canonical phone digits
+    // instead of requiring the phone string to be stored in a single format.
+    const { data: ownerProfiles, error: profilesError } = await supabaseAdmin
       .from("profiles")
       .select("id, phone, role")
-      .eq("phone", normalizedPhone)
-      .eq("role", "owner")
-      .single();
+      .eq("role", "owner");
 
-    if (profileError || !profile) {
+    if (profilesError || !ownerProfiles?.length) {
+      return NextResponse.json(
+        { error: "Invalid phone number or password." },
+        { status: 401 }
+      );
+    }
+
+    const profile = ownerProfiles.find((row) => {
+      return normalizePhone(row.phone) === normalizedPhone;
+    });
+
+    if (!profile) {
       return NextResponse.json(
         { error: "Invalid phone number or password." },
         { status: 401 }
