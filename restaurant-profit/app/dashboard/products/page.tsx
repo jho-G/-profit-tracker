@@ -139,15 +139,7 @@ export default async function ProductsPage() {
                       >
                         Edit
                       </Link>
-                      <form
-                        action={toggleProductStatus.bind(null, product.id, false)}
-                        method="POST"
-                        onSubmit={(event) => {
-                          if (!confirm("Deactivate this product? Historical sales and price history will remain untouched.")) {
-                            event.preventDefault();
-                          }
-                        }}
-                      >
+                      <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
                         <button type="submit" className="rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
                           Deactivate
                         </button>
