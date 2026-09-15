@@ -15,6 +15,7 @@ const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
   currency: "ETB",
   minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 const drinkWords = ["drink", "beverage", "juice", "coffee", "tea", "water", "መጠጥ"];
@@ -207,126 +208,6 @@ function UnavailableMenu() {
         <div className="text-[11px] font-black uppercase tracking-[0.3em] text-[#b65b2a]">Liyu Shiro</div>
         <h1 className="mt-4 text-3xl font-black">Menu unavailable</h1>
         <p className="mt-4 text-sm leading-7 text-[#785f50]">Menu unavailable right now. Please try again.</p>
-      </div>
-    </main>
-  );
-}
-import { createClient } from "@/lib/supabase/server";
-
-const money = new Intl.NumberFormat("en-ET", {
-  style: "currency",
-  currency: "ETB",
-  minimumFractionDigits: 0,
-});
-
-export default async function PublicRestaurantMenuPage({
-  params,
-}: {
-  params: Promise<{ restaurantId: string }>;
-}) {
-  const supabase = await createClient();
-  const { restaurantId } = await params;
-
-  const { data: menuItems, error: menuError } = await supabase
-    .from("public_menu_items")
-    .select("restaurant_id, restaurant_name, product_id, product_name, selling_price, category, description, image_url")
-    .eq("restaurant_id", restaurantId)
-    .order("category", { ascending: true })
-    .order("product_name", { ascending: true });
-
-  if (menuError) {
-    return (
-      <main className="min-h-screen bg-[#f8f4ee] px-3 py-8">
-        <div className="mx-auto w-full max-w-[480px] rounded-[2rem] border border-stone-200 bg-white shadow-sm">
-          <section className="border-b border-stone-100 px-5 py-5">
-            <div className="text-[22px] font-black tracking-tight text-stone-900">Restaurant menu</div>
-            <div className="mt-1 text-[11px] font-semibold text-stone-500">Public menu</div>
-          </section>
-
-          <section className="px-5 py-4">
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 text-center">
-              <div className="text-sm font-black text-stone-900">Public menu unavailable</div>
-              <div className="mt-2 text-[11px] font-medium text-stone-600">
-                This restaurant menu is not available right now. Please try again later.
-              </div>
-            </div>
-          </section>
-        </div>
-      </main>
-    );
-  }
-
-  const activeProducts = menuItems ?? [];
-  const restaurantName = activeProducts[0]?.restaurant_name ?? "Restaurant menu";
-  const categories = Array.from(new Set(activeProducts.map((product) => product.category).filter(Boolean))) as string[];
-
-  return (
-    <main className="min-h-screen bg-[#f8f4ee] px-3 py-8">
-      <div className="mx-auto w-full max-w-[480px] rounded-[2rem] border border-stone-200 bg-white shadow-sm">
-        <section className="border-b border-stone-100 px-5 py-5">
-          <div className="text-[22px] font-black tracking-tight text-stone-900">{restaurantName}</div>
-          <div className="mt-1 text-[11px] font-semibold text-stone-500">Public menu</div>
-        </section>
-
-        <section className="px-5 py-4">
-          {activeProducts.length === 0 ? (
-            <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 text-center">
-              <div className="text-sm font-black text-stone-900">Menu coming soon</div>
-            </div>
-          ) : categories.length === 0 ? (
-            <div className="space-y-3">
-              {activeProducts.map((product) => (
-                <article key={product.product_id} className="rounded-2xl border border-stone-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.product_name} className="h-16 w-16 rounded-xl object-cover" />
-                    ) : (
-                      <div className="h-16 w-16 rounded-xl border border-stone-200 bg-stone-50" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="text-sm font-black text-stone-900">{product.product_name}</div>
-                        <div className="text-sm font-black text-green-700">{money.format(product.selling_price)}</div>
-                      </div>
-                      {product.category && <div className="mt-1 text-[11px] font-bold text-stone-500">{product.category}</div>}
-                      {product.description && <div className="mt-2 text-[11px] font-medium text-stone-600">{product.description}</div>}
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {categories.map((category) => (
-                <section key={category} className="space-y-2">
-                  <div className="text-[11px] font-black uppercase tracking-wide text-stone-700">{category}</div>
-                  <div className="space-y-3">
-                    {activeProducts
-                      .filter((product) => product.category === category)
-                      .map((product) => (
-                        <article key={product.product_id} className="rounded-2xl border border-stone-200 bg-white p-4">
-                          <div className="flex items-center gap-3">
-                            {product.image_url ? (
-                              <img src={product.image_url} alt={product.product_name} className="h-16 w-16 rounded-xl object-cover" />
-                            ) : (
-                              <div className="h-16 w-16 rounded-xl border border-stone-200 bg-stone-50" />
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="text-sm font-black text-stone-900">{product.product_name}</div>
-                                <div className="text-sm font-black text-green-700">{money.format(product.selling_price)}</div>
-                              </div>
-                              {product.description && <div className="mt-2 text-[11px] font-medium text-stone-600">{product.description}</div>}
-                            </div>
-                          </div>
-                        </article>
-                      ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-          )}
-        </section>
       </div>
     </main>
   );
