@@ -76,21 +76,21 @@ export default async function EditProductPage({
               <label className="mb-2 block text-sm font-medium text-stone-700">
                 Product name <span className="text-red-600">*</span>
               </label>
-              <input name="name" defaultValue={product.name} required className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+              <input name="name" defaultValue={product.name} required className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">
                 Category
               </label>
-              <input name="category" defaultValue={product.category || ""} className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+              <input name="category" defaultValue={product.category || ""} className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
             </div>
 
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">
                 Description
               </label>
-              <textarea name="description" defaultValue={product.description || ""} rows={4} className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+              <textarea name="description" defaultValue={product.description || ""} rows={4} className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
@@ -98,13 +98,13 @@ export default async function EditProductPage({
                 <label className="mb-2 block text-sm font-medium text-stone-700">
                   Cost price <span className="text-red-600">*</span>
                 </label>
-                <input name="cost_price" type="number" min="0" step="0.01" defaultValue={product.cost_price} required className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+                <input name="cost_price" type="number" min="0" step="0.01" defaultValue={product.cost_price} required className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-stone-700">
                   Selling price <span className="text-red-600">*</span>
                 </label>
-                <input name="selling_price" type="number" min="0" step="0.01" defaultValue={product.selling_price} required className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+                <input name="selling_price" type="number" min="0" step="0.01" defaultValue={product.selling_price} required className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
               </div>
             </div>
 
@@ -112,7 +112,7 @@ export default async function EditProductPage({
               <label className="mb-2 block text-sm font-medium text-stone-700">
                 Image URL
               </label>
-              <input name="image_url" defaultValue={product.image_url || ""} className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+              <input name="image_url" defaultValue={product.image_url || ""} className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
             </div>
 
             <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
