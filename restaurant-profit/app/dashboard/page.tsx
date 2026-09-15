@@ -59,32 +59,42 @@ export default async function DashboardPage({
     );
   }
 
-  const { data: restaurant } = await supabase
-    .from("restaurants")
-    .select("id, name")
-    .eq("id", profile.restaurant_id)
-    .maybeSingle();
+  const [restaurantResult, productsResult, salesResult] = await Promise.all([
+    supabase
+      .from("restaurants")
+      .select("id, name")
+      .eq("id", profile.restaurant_id)
+      .maybeSingle(),
+    supabase
+      .from("products")
+      .select("id,name,cost_price,selling_price,active,category,description,image_url")
+      .eq("restaurant_id", profile.restaurant_id)
+      .order("name", { ascending: true }),
+    supabase
+      .from("sales")
+      .select("id,sold_at,product_name_snapshot,quantity,cost_price_snapshot,selling_price_snapshot,profit,restaurant_id")
+      .eq("restaurant_id", profile.restaurant_id)
+      .order("sold_at", { ascending: false }),
+  ]);
 
-  const headerStore = await headers();
-  const host = headerStore.get("host") ?? "localhost:3000";
-  const proto = headerStore.get("x-forwarded-proto") ?? "http";
-  const publicMenuUrl = `${proto}://${host}/menu/${restaurant?.id ?? profile.restaurant_id}`;
-  const qrDataUrl = await QRCode.toDataURL(publicMenuUrl);
+  const restaurant = restaurantResult.data;
+  const products = productsResult.data;
+  const productsError = productsResult.error;
+  const sales = salesResult.data;
+  const salesError = salesResult.error;
 
-  const { data: products, error: productsError } = await supabase
-    .from("products")
-    .select("id,name,cost_price,selling_price,active,category,description,image_url")
-    .eq("restaurant_id", profile.restaurant_id)
-    .order("name", { ascending: true });
+  let publicMenuUrl = "";
+  let qrDataUrl: string | null = null;
+  if (tab === "qr") {
+    const headerStore = await headers();
+    const host = headerStore.get("host") ?? "localhost:3000";
+    const proto = headerStore.get("x-forwarded-proto") ?? "http";
+    publicMenuUrl = `${proto}://${host}/menu/${restaurant?.id ?? profile.restaurant_id}`;
+    qrDataUrl = await QRCode.toDataURL(publicMenuUrl);
+  }
 
   const activeProducts = (products ?? []).filter((p) => p.active);
   const inactiveProducts = (products ?? []).filter((p) => !p.active);
-
-  const { data: sales, error: salesError } = await supabase
-    .from("sales")
-    .select("id,sold_at,product_name_snapshot,quantity,cost_price_snapshot,selling_price_snapshot,profit,restaurant_id")
-    .eq("restaurant_id", profile.restaurant_id)
-    .order("sold_at", { ascending: false });
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
@@ -145,10 +155,10 @@ export default async function DashboardPage({
 
         <section className="px-5">
           <div className="grid grid-cols-4 rounded-2xl bg-stone-100 p-1">
-            <a href="/dashboard?tab=sell" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "sell" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>Sell</a>
-            <a href="/dashboard?tab=menu" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "menu" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>Menu</a>
-            <a href="/dashboard?tab=history" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "history" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>History</a>
-            <a href="/dashboard?tab=qr" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "qr" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>QR Menu</a>
+            <Link prefetch={false} href="/dashboard?tab=sell" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "sell" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>Sell</Link>
+            <Link prefetch={false} href="/dashboard?tab=menu" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "menu" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>Menu</Link>
+            <Link prefetch={false} href="/dashboard?tab=history" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "history" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>History</Link>
+            <Link prefetch={false} href="/dashboard?tab=qr" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "qr" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>QR Menu</Link>
           </div>
         </section>
 
@@ -287,13 +297,13 @@ export default async function DashboardPage({
                 <div className="text-sm font-black text-stone-900">QR Menu</div>
                 <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-4">
                   <div className="flex flex-col items-center gap-3">
-                    <img src={qrDataUrl} alt="Public menu QR code" className="h-40 w-40 rounded-xl border border-stone-200 bg-white p-2" />
+                    <img src={qrDataUrl ?? ""} alt="Public menu QR code" className="h-40 w-40 rounded-xl border border-stone-200 bg-white p-2" />
                     <div className="w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-3">
                       <div className="text-[11px] font-black uppercase text-stone-500">Public menu URL</div>
                       <a href={publicMenuUrl} className="mt-1 block break-all text-[11px] font-semibold text-stone-700 hover:text-stone-900">{publicMenuUrl}</a>
                     </div>
                     <div className="flex gap-2">
-                      <a href={qrDataUrl} download="restaurant-public-menu-qr.png" className="rounded-xl bg-stone-900 px-4 py-2 text-[11px] font-black text-white transition hover:bg-stone-800">Download QR</a>
+                      <a href={qrDataUrl ?? ""} download="restaurant-public-menu-qr.png" className="rounded-xl bg-stone-900 px-4 py-2 text-[11px] font-black text-white transition hover:bg-stone-800">Download QR</a>
                       <Link href="/dashboard?tab=menu" className="rounded-xl border border-stone-300 px-4 py-2 text-[11px] font-black text-stone-700 transition hover:bg-white">Back to Menu</Link>
                     </div>
                   </div>
