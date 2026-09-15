@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 type MenuItem = {
   restaurant_id: string;
@@ -25,7 +25,7 @@ export default async function PublicRestaurantMenuPage({
 }: {
   params: Promise<{ restaurantId: string }>;
 }) {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { restaurantId } = await params;
 
   const { data, error } = await supabase
