@@ -176,7 +176,7 @@ export default async function DashboardPage({
                             <input type="hidden" name="product_id" value={product.id} />
                             <input type="hidden" name="sold_at" value={new Date().toISOString()} />
                             <label className="sr-only" htmlFor={`quantity-${product.id}`}>Quantity</label>
-                            <input id={`quantity-${product.id}`} name="quantity" type="number" min="1" step="1" defaultValue={1} required className="w-14 rounded-xl border border-stone-300 px-2 py-2 text-center text-sm font-semibold outline-none focus:border-stone-900" />
+                            <input id={`quantity-${product.id}`} name="quantity" type="number" min="1" step="1" defaultValue={1} required className="w-14 rounded-xl border border-stone-300 bg-white px-2 py-2 text-center text-sm font-semibold text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
                             <button type="submit" className="rounded-xl bg-green-700 px-4 py-2 text-xs font-black text-white transition hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700/30">Log sale</button>
                           </form>
                         </div>
