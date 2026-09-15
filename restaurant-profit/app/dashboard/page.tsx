@@ -144,10 +144,11 @@ export default async function DashboardPage({
         </section>
 
         <section className="px-5">
-          <div className="flex rounded-2xl bg-stone-100 p-1">
+          <div className="grid grid-cols-4 rounded-2xl bg-stone-100 p-1">
             <a href="/dashboard?tab=sell" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "sell" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>Sell</a>
             <a href="/dashboard?tab=menu" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "menu" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>Menu</a>
             <a href="/dashboard?tab=history" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "history" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>History</a>
+            <a href="/dashboard?tab=qr" className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black ${tab === "qr" ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200" : "text-stone-500"}`}>QR Menu</a>
           </div>
         </section>
 
