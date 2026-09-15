@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { deleteSale } from "./actions";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -99,6 +100,7 @@ export default async function SalesPage({ searchParams }: { searchParams?: Promi
                 error === "invalid-sold-at" ? "Enter a valid sale date/time." :
                 error === "invalid-product" ? "Invalid product selection." :
                 error === "inactive-product" ? "Inactive products cannot be sold." :
+                error === "delete-sale-failed" ? "Unable to delete this sale right now." :
                 decodeURIComponent(error)}
             </div>
           )}
@@ -168,6 +170,19 @@ export default async function SalesPage({ searchParams }: { searchParams?: Promi
                     </div>
                     <div className="text-sm text-stone-600">
                       <span className="font-medium">Profit:</span> <span className="text-green-700">{money.format(sale.profit)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/sales/${sale.id}/edit`} className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-white">
+                        Edit
+                      </Link>
+                      <form action={deleteSale.bind(null, sale.id)}>
+                        <button type="submit" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-100">
+                          Delete
+                        </button>
+                      </form>
+                      <Link href={`/dashboard/sales/${sale.id}`} className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-white">
+                        View
+                      </Link>
                     </div>
                   </div>
                 ))}

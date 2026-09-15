@@ -116,3 +116,78 @@ export async function createSale(formData: FormData) {
   revalidatePath("/dashboard/sales");
   redirect("/dashboard?tab=sell");
 }
+
+export async function updateSale(saleId: string, formData: FormData) {
+  const supabase = await createClient();
+  const owner = await getOwnerRestaurant(supabase);
+
+  const quantityRaw = parseQuantity(formData.get("quantity"));
+  const soldAtRaw = parseSoldAt(formData.get("sold_at"));
+
+  if (quantityRaw === null) {
+    redirect(`/dashboard/sales/${saleId}/edit?error=invalid-quantity`);
+  }
+
+  if (quantityRaw <= 0) {
+    redirect(`/dashboard/sales/${saleId}/edit?error=quantity-must-be-positive`);
+  }
+
+  if (!soldAtRaw) {
+    redirect(`/dashboard/sales/${saleId}/edit?error=invalid-sold-at`);
+  }
+
+  const { data: sale, error: saleError } = await supabase
+    .from("sales")
+    .select("id, restaurant_id, quantity, sold_at, cost_price_snapshot, selling_price_snapshot")
+    .eq("id", saleId)
+    .eq("restaurant_id", owner.restaurant_id)
+    .maybeSingle();
+
+  if (saleError || !sale) {
+    redirect("/dashboard/sales?error=missing-sale");
+  }
+
+  const quantity = Number(quantityRaw);
+  const costPrice = Number(sale.cost_price_snapshot ?? 0);
+  const sellingPrice = Number(sale.selling_price_snapshot ?? 0);
+  const updatedProfit = (sellingPrice - costPrice) * quantity;
+
+  const { error: updateError } = await supabase
+    .from("sales")
+    .update({
+      quantity,
+      sold_at: soldAtRaw,
+      profit: updatedProfit,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", saleId)
+    .eq("restaurant_id", owner.restaurant_id);
+
+  if (updateError) {
+    redirect(`/dashboard/sales/${saleId}/edit?error=${encodeURIComponent(updateError.message)}`);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/sales");
+  revalidatePath(`/dashboard/sales/${saleId}`);
+  redirect("/dashboard/sales");
+}
+
+export async function deleteSale(saleId: string) {
+  const supabase = await createClient();
+  const owner = await getOwnerRestaurant(supabase);
+
+  const { error: deleteError } = await supabase
+    .from("sales")
+    .delete()
+    .eq("id", saleId)
+    .eq("restaurant_id", owner.restaurant_id);
+
+  if (deleteError) {
+    redirect("/dashboard/sales?error=delete-sale-failed");
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/sales");
+  redirect("/dashboard/sales");
+}
