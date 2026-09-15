@@ -62,40 +62,40 @@ export default async function PublicRestaurantMenuPage({
         </div>
 
         <div className="mx-auto w-full max-w-6xl px-5 pb-16 text-center sm:px-8 sm:pb-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#f7c58e]">A taste of home</p>
+          <p className="text-xs font-semibold tracking-[0.16em] text-[#f7c58e]">የቤት ጣዕም</p>
           <h1 className="mx-auto mt-4 max-w-3xl text-5xl font-black leading-[0.98] tracking-[-0.035em] text-[#fffaf2] sm:text-7xl md:text-8xl">
             {restaurantName}
           </h1>
           <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[#f4dfc7] sm:text-base">
-            Warm plates, generous flavors, and the simple joy of sharing a good meal.
+            ሞቅ ያሉ ምግቦች፣ የበለጸገ ጣዕም እና አብሮ የመመገብ ደስታ።
           </p>
           <a
             href="#menu"
             className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#e87531] px-6 py-3 text-sm font-bold text-white shadow-[0_12px_30px_rgba(102,38,12,0.28)] transition hover:bg-[#f1843b] focus:outline-none focus:ring-2 focus:ring-[#ffd2a1] focus:ring-offset-2 focus:ring-offset-[#643828]"
           >
-            Explore the menu
+            ምናሌውን ይመልከቱ
             <span aria-hidden="true" className="text-lg leading-none">↓</span>
           </a>
         </div>
 
         <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-[#f7d6b0]">
-          <span>Scroll</span>
+          <span>ወደ ታች</span>
           <span className="h-8 w-px bg-[#f7d6b0]/70" />
         </div>
       </section>
 
       <section id="menu" className="mx-auto max-w-6xl px-5 pb-24 pt-20 sm:px-8 sm:pt-28">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[#b65b2a]">Liyu Shiro</p>
-          <h2 className="mt-4 text-4xl font-black tracking-[-0.03em] text-[#3c251b] sm:text-6xl">Our menu</h2>
+          <p className="text-[11px] font-black tracking-[0.16em] text-[#b65b2a]">ልዩ ሽሮ</p>
+          <h2 className="mt-4 text-4xl font-black tracking-[-0.03em] text-[#3c251b] sm:text-6xl">የእኛ ምናሌ</h2>
           <div className="mx-auto mt-5 h-1 w-14 rounded-full bg-[#e87531]" />
           <p className="mx-auto mt-6 max-w-lg text-sm leading-7 text-[#785f50] sm:text-base">
-            Made with care, served with warmth. Find your next favorite plate below.
+            በጥንቃቄ የተዘጋጀ፣ በሙቀት የሚቀርብ። የሚወዱትን ምግብ ከታች ይምረጡ።
           </p>
         </div>
 
         {categories.length > 1 && (
-          <nav aria-label="Menu categories" className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2">
+          <nav aria-label="የምግብ ምድቦች" className="mx-auto mt-10 flex max-w-3xl flex-wrap justify-center gap-2">
             {groups.map((group) => (
               <a
                 key={group.id}
@@ -110,8 +110,8 @@ export default async function PublicRestaurantMenuPage({
 
         {items.length === 0 ? (
           <div className="mx-auto mt-16 max-w-xl rounded-[24px] border border-[#e5cfb9] bg-[#fbf6ef] px-6 py-12 text-center shadow-[0_18px_50px_rgba(91,51,29,0.06)]">
-            <div className="text-2xl font-black text-[#3c251b]">Menu coming soon</div>
-            <p className="mt-3 text-sm text-[#785f50]">We are preparing something delicious for you.</p>
+            <div className="text-2xl font-black text-[#3c251b]">ምናሌው በቅርቡ ይገኛል</div>
+            <p className="mt-3 text-sm text-[#785f50]">ጣፋጭ ምግቦችን እያዘጋጀን ነው።</p>
           </div>
         ) : (
           <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-28">
@@ -119,10 +119,10 @@ export default async function PublicRestaurantMenuPage({
               <section key={group.id} id={group.id} className="scroll-mt-8">
                 <div className="mb-7 flex items-end justify-between gap-4 border-b border-[#dfc4aa] pb-4">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#c65d27]">From the kitchen</p>
+                    <p className="text-[10px] font-black tracking-[0.16em] text-[#c65d27]">ከኩሽናችን</p>
                     <h3 className="mt-2 text-3xl font-black tracking-[-0.025em] text-[#3c251b] sm:text-4xl">{group.label}</h3>
                   </div>
-                  <span className="pb-1 text-xs font-semibold text-[#987765]">{group.items.length} items</span>
+                  <span className="pb-1 text-xs font-semibold text-[#987765]">{group.items.length} ምግቦች</span>
                 </div>
 
                 <div className={`grid gap-5 sm:gap-7 ${group.isDrinks ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-2 lg:grid-cols-3"}`}>
@@ -138,16 +138,16 @@ export default async function PublicRestaurantMenuPage({
 
       <section className="mx-5 mb-8 overflow-hidden rounded-[30px] bg-[#4a2b20] sm:mx-8">
         <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:px-10 sm:py-20">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#ed9b5b]">Good food, good company</p>
-          <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-black tracking-[-0.025em] text-[#fff8ee] sm:text-5xl">Come hungry. Leave happy.</h2>
-          <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[#e8cbb2]">Visit us and enjoy a meal made for sharing.</p>
-          <a href="#menu" className="mt-8 inline-flex rounded-full bg-[#e87531] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#f1843b] focus:outline-none focus:ring-2 focus:ring-[#ffd2a1] focus:ring-offset-2 focus:ring-offset-[#4a2b20]">View the menu</a>
+          <p className="text-[10px] font-black tracking-[0.16em] text-[#ed9b5b]">ጥሩ ምግብ፣ ጥሩ አብሮነት</p>
+          <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-black tracking-[-0.025em] text-[#fff8ee] sm:text-5xl">በረሃብ ይምጡ፣ በደስታ ይመለሱ።</h2>
+          <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[#e8cbb2]">ይምጡና በፍቅር የተዘጋጀ ምግብ ይደሰቱ።</p>
+          <a href="#menu" className="mt-8 inline-flex rounded-full bg-[#e87531] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#f1843b] focus:outline-none focus:ring-2 focus:ring-[#ffd2a1] focus:ring-offset-2 focus:ring-offset-[#4a2b20]">ምናሌውን ይመልከቱ</a>
         </div>
       </section>
 
       <footer className="bg-[#2d1b16] px-5 py-8 text-center text-xs text-[#c9a895] sm:px-8">
         <div className="font-black uppercase tracking-[0.25em] text-[#f0c08b]">Liyu Shiro</div>
-        <p className="mt-3">A table worth gathering around.</p>
+        <p className="mt-3">አብሮ ለመሰብሰብ የሚገባ ጠረጴዛ።</p>
       </footer>
     </main>
   );
@@ -207,7 +207,7 @@ function UnavailableMenu() {
       <div className="w-full max-w-md rounded-[28px] border border-[#e5cfb9] bg-[#fffaf4] px-6 py-12 shadow-[0_20px_60px_rgba(91,51,29,0.1)]">
         <div className="text-[11px] font-black uppercase tracking-[0.3em] text-[#b65b2a]">Liyu Shiro</div>
         <h1 className="mt-4 text-3xl font-black">Menu unavailable</h1>
-        <p className="mt-4 text-sm leading-7 text-[#785f50]">Menu unavailable right now. Please try again.</p>
+        <p className="mt-4 text-sm leading-7 text-[#785f50]">ምናሌው አሁን አይገኝም። እባክዎ ቆይተው እንደገና ይሞክሩ።</p>
       </div>
     </main>
   );
