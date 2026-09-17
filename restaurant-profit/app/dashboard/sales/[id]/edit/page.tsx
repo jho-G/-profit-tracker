@@ -118,15 +118,16 @@ export default async function EditSalePage({
               <button type="submit" className="rounded-xl bg-stone-900 px-5 py-3 font-medium text-white hover:bg-stone-800">
                 Save Changes
               </button>
-              <form action={deleteSale.bind(null, sale.id)}>
-                <button type="submit" className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 font-medium text-red-700 hover:bg-red-100">
-                  Delete sale
-                </button>
-              </form>
               <Link href={`/dashboard/sales/${sale.id}`} className="rounded-xl border border-stone-300 px-5 py-3 font-medium text-stone-700 hover:bg-stone-50">
                 Cancel
               </Link>
             </div>
+          </form>
+
+          <form action={deleteSale.bind(null, sale.id)} className="mt-4">
+            <button type="submit" className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 font-medium text-red-700 hover:bg-red-100">
+              Delete sale
+            </button>
           </form>
         </div>
       </div>
