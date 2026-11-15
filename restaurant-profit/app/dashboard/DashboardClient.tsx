@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { toggleProductStatus } from "./products/actions";
 import LogoutButton from "./LogoutButton";
@@ -313,19 +313,22 @@ export default function DashboardClient({
           </div>
         </section>
 
-        {/* Tabs - client-side switching */}
-        <section className="px-5">
-          <div className="grid grid-cols-4 rounded-2xl bg-stone-100 p-1">
-            {([["sell", "Sell"], ["menu", "Menu"], ["history", "History"], ["qr", "QR Menu"]] as const).map(([key, label]) => (
+        {/* Tabs - client-side switching (Mobile Optimized) */}
+        <section className="px-3 sm:px-5">
+          <div className="grid grid-cols-4 gap-1 rounded-2xl bg-stone-100 p-1">
+            {([["sell", "Sell", "💰"], ["menu", "Menu", "📋"], ["history", "History", "📊"], ["qr", "QR Menu", "📱"]] as const).map(([key, label, icon]) => (
               <button
                 key={key}
+                type="button"
                 onClick={() => setActiveTab(key)}
-                className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black transition ${activeTab === key
-                  ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                  : "text-stone-500 hover:text-stone-700"
-                  }`}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1 rounded-xl py-2 px-1 text-center text-[11px] sm:text-xs font-black transition touch-manipulation active:scale-95 ${
+                  activeTab === key
+                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                    : "text-stone-500 hover:text-stone-700"
+                }`}
               >
-                {label}
+                <span className="text-sm sm:text-xs">{icon}</span>
+                <span>{label}</span>
               </button>
             ))}
           </div>
@@ -382,7 +385,7 @@ export default function DashboardClient({
 }
 
 /* ============================================================
-   SELL TAB
+   SELL TAB (Mobile-Optimized)
 ============================================================ */
 
 function SellTab({
@@ -398,13 +401,98 @@ function SellTab({
   onLogSale: (product: Product, quantity: number) => Promise<void>;
   money: Intl.NumberFormat;
 }) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCat, setSelectedCat] = useState("all");
+
+  const categories = useMemo(() => {
+    return Array.from(
+      new Set(
+        activeProducts
+          .map((p) => p.category?.trim())
+          .filter((c): c is string => Boolean(c && c.length > 0))
+      )
+    );
+  }, [activeProducts]);
+
+  const filteredProducts = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return activeProducts.filter((p) => {
+      const matchCat = selectedCat === "all" || p.category === selectedCat;
+      if (!matchCat) return false;
+      if (!q) return true;
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.category && p.category.toLowerCase().includes(q))
+      );
+    });
+  }, [activeProducts, selectedCat, searchTerm]);
+
   return (
     <div className="space-y-4">
-      {activeProducts.length === 0 ? (
-        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-500">No active products available.</div>
+      {/* MOBILE SEARCH & CATEGORY SELECTOR */}
+      <div className="space-y-2">
+        <div className="relative">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-stone-400">
+            🔍
+          </span>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search food to sell (ሽሮ፣ ዱለት፣ ጥብስ...)..."
+            className="w-full rounded-xl border border-stone-200 bg-stone-50 py-2.5 pl-9 pr-8 text-xs font-bold text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-stone-400 hover:text-stone-700"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Scrollable Category Chips for fast tapping */}
+        {categories.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <button
+              type="button"
+              onClick={() => setSelectedCat("all")}
+              className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition touch-manipulation active:scale-95 ${
+                selectedCat === "all"
+                  ? "bg-stone-900 text-white"
+                  : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100"
+              }`}
+            >
+              All ({activeProducts.length})
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCat(cat)}
+                className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition touch-manipulation active:scale-95 ${
+                  selectedCat === cat
+                    ? "bg-stone-900 text-white"
+                    : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* PRODUCTS LIST */}
+      {filteredProducts.length === 0 ? (
+        <div className="rounded-2xl border border-stone-200 bg-stone-50 p-6 text-center text-xs font-bold text-stone-500">
+          No matching products found.
+        </div>
       ) : (
-        <div className="space-y-3">
-          {activeProducts.map((product) => (
+        <div className="space-y-2">
+          {filteredProducts.map((product) => (
             <ProductSaleCard
               key={product.id}
               product={product}
@@ -415,6 +503,7 @@ function SellTab({
         </div>
       )}
 
+      {/* TODAY'S BREAKDOWN BY MEAL */}
       <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
         <div className="text-sm font-black text-stone-900">Today by meal</div>
         <div className="mt-3 space-y-2">
@@ -431,6 +520,7 @@ function SellTab({
         </div>
       </div>
 
+      {/* RECENT SALES */}
       <div className="rounded-2xl border border-stone-200 bg-white p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
           <div className="text-sm font-black text-stone-900">Recent sales</div>
@@ -484,76 +574,77 @@ function ProductSaleCard({
     setQuantity(1);
     await onLogSale(product, qtyToLog);
     setLoading(false);
-    setTimeout(() => setJustLogged(false), 1200);
+    setTimeout(() => setJustLogged(false), 1000);
   };
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-sm font-black text-stone-900">{product.name}</div>
-          <div className="mt-1 flex flex-wrap gap-2 text-[11px] font-semibold text-stone-500">
-            <span>cost {money.format(product.cost_price)}</span>
+    <div
+      className={`rounded-2xl border p-3 sm:p-3.5 transition ${
+        justLogged
+          ? "border-emerald-300 bg-emerald-50/50"
+          : "border-stone-200 bg-white shadow-xs"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-black text-stone-900">{product.name}</div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-stone-500">
+            <span className="font-bold text-stone-800">{money.format(product.selling_price)}</span>
             <span>·</span>
-            <span>sell {money.format(product.selling_price)}</span>
-            <span>·</span>
-            <span>profit {money.format(product.selling_price - product.cost_price)}</span>
+            <span className="font-bold text-green-700">+{money.format(product.selling_price - product.cost_price)}</span>
+            {product.category && (
+              <>
+                <span>·</span>
+                <span className="text-[10px] text-stone-400">{product.category}</span>
+              </>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <label className="sr-only" htmlFor={`quantity-${product.id}`}>Quantity</label>
-            <div className="flex items-center rounded-xl border border-stone-300 bg-white">
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1 || loading}
-                className="px-2.5 py-1.5 text-xs font-black text-stone-500 hover:text-stone-900 disabled:opacity-30"
-                aria-label="Decrease quantity"
-              >
-                −
-              </button>
-              <input
-                id={`quantity-${product.id}`}
-                name="quantity"
-                type="number"
-                min="1"
-                step="1"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                required
-                className="w-9 border-0 bg-transparent py-1.5 text-center text-xs font-bold text-stone-900 outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => q + 1)}
-                disabled={loading}
-                className="px-2.5 py-1.5 text-xs font-black text-stone-500 hover:text-stone-900"
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
+
+        <form onSubmit={handleSubmit} className="flex shrink-0 items-center gap-1.5">
+          <label className="sr-only" htmlFor={`quantity-${product.id}`}>Quantity</label>
+          <div className="flex items-center rounded-xl border border-stone-200 bg-stone-50 shadow-xs">
             <button
-              type="submit"
-              disabled={loading}
-              className={`rounded-xl px-4 py-2 text-xs font-black text-white transition focus:outline-none focus:ring-2 ${
-                justLogged
-                  ? "bg-emerald-600 focus:ring-emerald-500/30"
-                  : "bg-green-700 hover:bg-green-800 focus:ring-green-700/30"
-              }`}
+              type="button"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={quantity <= 1 || loading}
+              className="flex h-9 w-8 touch-manipulation items-center justify-center text-sm font-black text-stone-600 hover:text-stone-900 active:bg-stone-200 rounded-l-xl disabled:opacity-25"
+              aria-label="Decrease quantity"
             >
-              {justLogged ? "✓ Logged" : "Log sale"}
+              −
             </button>
-          </form>
-        </div>
+            <span className="w-6 text-center text-xs font-black text-stone-900">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => q + 1)}
+              disabled={loading}
+              className="flex h-9 w-8 touch-manipulation items-center justify-center text-sm font-black text-stone-600 hover:text-stone-900 active:bg-stone-200 rounded-r-xl"
+              aria-label="Increase quantity"
+            >
+              +
+            </button>
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`flex h-9 min-w-[70px] touch-manipulation items-center justify-center rounded-xl px-3 text-xs font-black text-white shadow-xs transition active:scale-95 ${
+              justLogged
+                ? "bg-emerald-600"
+                : "bg-green-700 hover:bg-green-800"
+            }`}
+          >
+            {justLogged ? "✓ Logged" : "+ Log"}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
 /* ============================================================
-   MENU TAB
+   MENU TAB (Mobile-Optimized)
 ============================================================ */
 
 function MenuTab({
@@ -565,26 +656,95 @@ function MenuTab({
   inactiveProducts: Product[];
   money: Intl.NumberFormat;
 }) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredActive = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return activeProducts;
+    return activeProducts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.category && p.category.toLowerCase().includes(q))
+    );
+  }, [activeProducts, searchTerm]);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-black text-stone-900">Menu</h3>
-        <Link href="/dashboard/products/new" className="rounded-xl bg-stone-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-stone-900/30">Add product</Link>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-black text-stone-900">
+          Menu ({activeProducts.length} active)
+        </h3>
+        <Link
+          href="/dashboard/products/new"
+          className="rounded-xl bg-stone-900 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-stone-800 touch-manipulation active:scale-95"
+        >
+          + Add Product
+        </Link>
       </div>
 
-      <div className="space-y-3">
-        {activeProducts.map((product) => (
-          <div key={product.id} className="rounded-2xl border border-stone-200 bg-white p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* Quick Search */}
+      <div className="relative">
+        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-stone-400">
+          🔍
+        </span>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Filter products..."
+          className="w-full rounded-xl border border-stone-200 bg-stone-50 py-2 pl-9 pr-8 text-xs font-bold text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none"
+        />
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={() => setSearchTerm("")}
+            className="absolute inset-y-0 right-2.5 flex items-center text-xs font-bold text-stone-400 hover:text-stone-700"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      <div className="space-y-2.5">
+        {filteredActive.map((product) => (
+          <div key={product.id} className="rounded-2xl border border-stone-200 bg-white p-3 sm:p-4 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="min-w-0">
                 <div className="text-sm font-black text-stone-900">{product.name}</div>
-                <div className="text-[11px] font-semibold text-stone-500">cost {money.format(product.cost_price)} · sell {money.format(product.selling_price)} · profit {money.format(product.selling_price - product.cost_price)}</div>
+                <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] font-semibold text-stone-500">
+                  <span>cost {money.format(product.cost_price)}</span>
+                  <span>·</span>
+                  <span>sell {money.format(product.selling_price)}</span>
+                  <span>·</span>
+                  <span className="font-bold text-green-700">+{money.format(product.selling_price - product.cost_price)}</span>
+                  {product.category && (
+                    <>
+                      <span>·</span>
+                      <span className="text-[10px] text-stone-400">{product.category}</span>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/dashboard/products/${product.id}`} className="rounded-lg border border-stone-300 px-2 py-2 text-[11px] font-bold text-stone-700 transition hover:bg-stone-50">Price history</Link>
-                <Link href={`/dashboard/products/${product.id}/edit`} className="rounded-lg border border-stone-300 px-2 py-2 text-[11px] font-bold text-stone-700 transition hover:bg-stone-50">Edit</Link>
+              <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                <Link
+                  href={`/dashboard/products/${product.id}`}
+                  className="rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
+                >
+                  History
+                </Link>
+                <Link
+                  href={`/dashboard/products/${product.id}/edit`}
+                  className="rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
+                >
+                  Edit
+                </Link>
                 <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
-                  <button type="submit" className="rounded-lg bg-amber-700 px-2 py-2 text-[11px] font-bold text-white transition hover:bg-amber-800">Deactivate</button>
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 touch-manipulation"
+                  >
+                    Deactivate
+                  </button>
                 </form>
               </div>
             </div>
@@ -594,16 +754,21 @@ function MenuTab({
 
       {inactiveProducts.length > 0 && (
         <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-          <div className="text-sm font-black text-stone-900">Inactive products</div>
-          <div className="mt-3 space-y-3">
+          <div className="text-sm font-black text-stone-900">Inactive products ({inactiveProducts.length})</div>
+          <div className="mt-3 space-y-2.5">
             {inactiveProducts.map((product) => (
-              <div key={product.id} className="flex items-center justify-between gap-3">
+              <div key={product.id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-3">
                 <div>
                   <div className="text-sm font-black text-stone-900">{product.name}</div>
                   <div className="text-[11px] font-semibold text-stone-500">inactive</div>
                 </div>
                 <form action={toggleProductStatus.bind(null, product.id, true)} method="POST">
-                  <button type="submit" className="rounded-xl bg-green-700 px-3 py-2 text-[11px] font-black text-white transition hover:bg-green-800">Reactivate</button>
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-green-700 px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-green-800 touch-manipulation active:scale-95"
+                  >
+                    Reactivate
+                  </button>
                 </form>
               </div>
             ))}
