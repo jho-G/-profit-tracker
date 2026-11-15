@@ -196,14 +196,23 @@ export async function deleteProduct(productId: string, redirectTarget?: string |
   const target = typeof redirectTarget === "string" ? redirectTarget : "/dashboard?tab=menu";
 
   if (error) {
+    const isFk =
+      error.message.includes("foreign key") ||
+      error.code === "23503" ||
+      error.message.includes("violates") ||
+      error.message.includes("sales");
+    const friendlyError = isFk
+      ? "ይህ ምግብ የቀደመ የሽያጭ ታሪክ ስላለው ሊሰረዝ አይችልም። እባክዎ ከሜኑ ላይ ማጥፋት (Deactivate) ያድርጉት።"
+      : error.message;
     const separator = target.includes("?") ? "&" : "?";
-    redirect(`${target}${separator}error=${encodeURIComponent(error.message)}`);
+    redirect(`${target}${separator}error=${encodeURIComponent(friendlyError)}`);
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
   revalidatePath("/menu");
-  redirect(target);
+  const separator = target.includes("?") ? "&" : "?";
+  redirect(`${target}${separator}message=${encodeURIComponent("ምግቡ በተሳካ ሁኔታ ተሰርዟል።")}`);
 }
 
 export async function seedMenuProducts() {
