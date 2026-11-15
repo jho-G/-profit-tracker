@@ -18,7 +18,7 @@ function normalizePhone(rawPhone?: string | null): string {
 export async function POST(request: Request) {
   try {
     const supabaseAdmin = createClient(
-      process.env.SUPABASE_URL!,
+      (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         auth: {
@@ -51,21 +51,19 @@ export async function POST(request: Request) {
         );
       }
 
-      // Single-restaurant system: lookup the 2 restaurant admin profiles directly
-      const { data: adminProfiles, error: profilesError } = await supabaseAdmin
+      // Lookup restaurant admin / staff profiles by phone without artificial limits
+      const { data: profiles, error: profilesError } = await supabaseAdmin
         .from("profiles")
-        .select("id, phone, role")
-        .eq("role", "owner")
-        .limit(2);
+        .select("id, phone, role");
 
-      if (profilesError || !adminProfiles?.length) {
+      if (profilesError || !profiles?.length) {
         return NextResponse.json(
           { error: "Invalid phone number or password." },
           { status: 401 }
         );
       }
 
-      const profile = adminProfiles.find((row) => normalizePhone(row.phone) === normalizedPhone);
+      const profile = profiles.find((row) => normalizePhone(row.phone) === normalizedPhone);
 
       if (!profile) {
         return NextResponse.json(
