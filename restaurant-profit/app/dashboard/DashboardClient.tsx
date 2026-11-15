@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createSale } from "./sales/actions";
 import { toggleProductStatus } from "./products/actions";
 import LogoutButton from "./LogoutButton";
 import ChangePasswordModal from "./ChangePasswordModal";
@@ -321,11 +320,10 @@ export default function DashboardClient({
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black transition ${
-                  activeTab === key
-                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                    : "text-stone-500 hover:text-stone-700"
-                }`}
+                className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-black transition ${activeTab === key
+                  ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                  : "text-stone-500 hover:text-stone-700"
+                  }`}
               >
                 {label}
               </button>
@@ -670,11 +668,10 @@ function HistoryTab({
             <button
               key={value}
               onClick={() => setHistoryFilter(value)}
-              className={`rounded-full px-3 py-1 text-[11px] font-black transition ${
-                historyFilter === value
-                  ? "bg-stone-900 text-white"
-                  : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
-              }`}
+              className={`rounded-full px-3 py-1 text-[11px] font-black transition ${historyFilter === value
+                ? "bg-stone-900 text-white"
+                : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
+                }`}
             >
               {label}
             </button>

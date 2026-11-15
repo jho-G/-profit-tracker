@@ -57,27 +57,24 @@ export async function createSale(formData: FormData) {
   const soldAtRaw = parseSoldAt(formData.get("sold_at"));
   const source = sanitizeString(formData.get("source"));
 
-  const errorRedirect = (err: string) => {
-    if (source === "sales") {
-      redirect(`/dashboard/sales/new?error=${err}`);
-    }
-    redirect(`/dashboard?tab=sell&error=${err}`);
-  };
-
   if (!productId) {
-    errorRedirect("missing-product");
+    if (source === "sales") redirect("/dashboard/sales/new?error=missing-product");
+    redirect("/dashboard?tab=sell&error=missing-product");
   }
 
   if (quantityRaw === null) {
-    errorRedirect("invalid-quantity");
+    if (source === "sales") redirect("/dashboard/sales/new?error=invalid-quantity");
+    redirect("/dashboard?tab=sell&error=invalid-quantity");
   }
 
   if (quantityRaw <= 0) {
-    errorRedirect("quantity-must-be-positive");
+    if (source === "sales") redirect("/dashboard/sales/new?error=quantity-must-be-positive");
+    redirect("/dashboard?tab=sell&error=quantity-must-be-positive");
   }
 
   if (!soldAtRaw) {
-    errorRedirect("invalid-sold-at");
+    if (source === "sales") redirect("/dashboard/sales/new?error=invalid-sold-at");
+    redirect("/dashboard?tab=sell&error=invalid-sold-at");
   }
 
   const { data: product, error: productError } = await supabase
@@ -117,7 +114,8 @@ export async function createSale(formData: FormData) {
   ]);
 
   if (insertError) {
-    errorRedirect("record-sale-failed");
+    if (source === "sales") redirect("/dashboard/sales/new?error=record-sale-failed");
+    redirect("/dashboard?tab=sell&error=record-sale-failed");
   }
 
   revalidatePath("/dashboard");
