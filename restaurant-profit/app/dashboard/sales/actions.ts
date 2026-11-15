@@ -117,6 +117,71 @@ export async function createSale(formData: FormData) {
   redirect("/dashboard?tab=sell");
 }
 
+export async function createSaleDirect(input: {
+  productId: string;
+  quantity: number;
+  soldAt?: string;
+}) {
+  const supabase = await createClient();
+  const owner = await getOwnerRestaurant(supabase);
+
+  const productId = input.productId.trim();
+  const quantity = Math.floor(input.quantity);
+  const soldAt = input.soldAt || new Date().toISOString();
+
+  if (!productId) {
+    return { success: false, error: "Choose a product." };
+  }
+
+  if (!quantity || quantity <= 0) {
+    return { success: false, error: "Quantity must be greater than zero." };
+  }
+
+  const { data: product, error: productError } = await supabase
+    .from("products")
+    .select("id, restaurant_id, name, cost_price, selling_price, active")
+    .eq("id", productId)
+    .eq("restaurant_id", owner.restaurant_id)
+    .maybeSingle();
+
+  if (productError || !product) {
+    return { success: false, error: "Invalid product selection." };
+  }
+
+  if (!product.active) {
+    return { success: false, error: "Product is inactive." };
+  }
+
+  const costPrice = Number(product.cost_price);
+  const sellingPrice = Number(product.selling_price);
+  const profit = (sellingPrice - costPrice) * quantity;
+  const productName = product.name;
+
+  const { data: sale, error: insertError } = await supabase
+    .from("sales")
+    .insert([
+      {
+        restaurant_id: owner.restaurant_id,
+        product_id: product.id,
+        quantity,
+        sold_at: soldAt,
+        created_by: owner.user.id,
+        product_name_snapshot: productName,
+        cost_price_snapshot: costPrice,
+        selling_price_snapshot: sellingPrice,
+        profit,
+      },
+    ])
+    .select("id, sold_at, product_name_snapshot, quantity, cost_price_snapshot, selling_price_snapshot, profit, restaurant_id")
+    .single();
+
+  if (insertError) {
+    return { success: false, error: insertError.message };
+  }
+
+  return { success: true, sale };
+}
+
 export async function updateSale(saleId: string, formData: FormData) {
   const supabase = await createClient();
   const owner = await getOwnerRestaurant(supabase);
