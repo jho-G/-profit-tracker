@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-
-const money = new Intl.NumberFormat("en-ET", {
-  style: "currency",
-  currency: "ETB",
-  minimumFractionDigits: 2,
-});
+import { formatEthiopianDate } from "@/lib/ethiopian-calendar";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -71,25 +66,92 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Sales export unavailable" }, { status: 400 });
   }
 
-  const header = ["Date", "Meal", "Quantity", "Cost per unit", "Price per unit", "Profit"];
-  const rows = sales.map((sale) => [
-    new Date(sale.sold_at).toLocaleString("en-ET"),
-    sale.product_name_snapshot,
-    String(sale.quantity),
-    money.format(sale.cost_price_snapshot),
-    money.format(sale.selling_price_snapshot),
-    money.format(sale.profit),
-  ]);
+  // Header with clear columns and currency indication
+  const headers = [
+    "#",
+    "Ethiopian Date (የኢትዮጵያ ቀን)",
+    "Time (ሰዓት)",
+    "Gregorian Date (G.C.)",
+    "Meal Name (የምግብ ስም)",
+    "Quantity (ብዛት)",
+    "Unit Cost ETB (የአንዱ ወጪ)",
+    "Unit Price ETB (የአንዱ መሸጫ)",
+    "Total Revenue ETB (ጠቅላላ ገቢ)",
+    "Total Cost ETB (ጠቅላላ ወጪ)",
+    "Total Profit ETB (የተጣራ ትርፍ)",
+  ];
 
-  const csv = [
-    header.join(","),
-    ...rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")),
-  ].join("\n");
+  let sumQuantity = 0;
+  let sumRevenue = 0;
+  let sumCost = 0;
+  let sumProfit = 0;
 
-  return new NextResponse(csv, {
+  const rows = sales.map((sale, index) => {
+    const qty = Number(sale.quantity || 0);
+    const unitCost = Number(sale.cost_price_snapshot || 0);
+    const unitPrice = Number(sale.selling_price_snapshot || 0);
+    const totalRev = unitPrice * qty;
+    const totalCost = unitCost * qty;
+    const profit = Number(sale.profit ?? (totalRev - totalCost));
+
+    sumQuantity += qty;
+    sumRevenue += totalRev;
+    sumCost += totalCost;
+    sumProfit += profit;
+
+    const dateObj = new Date(sale.sold_at);
+    const ethDate = formatEthiopianDate(sale.sold_at, true);
+    const timeStr = dateObj.toLocaleTimeString("en-ET", { hour: "2-digit", minute: "2-digit" });
+    const gregDate = dateObj.toISOString().replace("T", " ").slice(0, 19);
+
+    return [
+      String(index + 1),
+      ethDate,
+      timeStr,
+      gregDate,
+      sale.product_name_snapshot,
+      qty.toString(),
+      unitCost.toFixed(2),
+      unitPrice.toFixed(2),
+      totalRev.toFixed(2),
+      totalCost.toFixed(2),
+      profit.toFixed(2),
+    ];
+  });
+
+  // Summary row at the bottom for instant Excel auditing
+  const summaryRow = [
+    "TOTAL (ድምር)",
+    "",
+    "",
+    "",
+    `${sales.length} Sales Records`,
+    sumQuantity.toString(),
+    "",
+    "",
+    sumRevenue.toFixed(2),
+    sumCost.toFixed(2),
+    sumProfit.toFixed(2),
+  ];
+
+  const escapeCell = (val: string) => `"${val.replace(/"/g, '""')}"`;
+
+  const csvContent = [
+    headers.map(escapeCell).join(","),
+    ...rows.map((row) => row.map(escapeCell).join(",")),
+    summaryRow.map(escapeCell).join(","),
+  ].join("\r\n");
+
+  // \uFEFF is UTF-8 Byte Order Mark (BOM), required by Microsoft Excel to display Amharic/Ge'ez text without corruption
+  const csvWithBom = `\uFEFF${csvContent}`;
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const filename = `liyu-shiro-sales-${filter}-${todayStr}.csv`;
+
+  return new NextResponse(csvWithBom, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="sales-${filter}.csv"`,
+      "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
 }
