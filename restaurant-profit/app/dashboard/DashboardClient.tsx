@@ -53,6 +53,11 @@ interface DashboardClientProps {
   initialTodayRevenue: number;
 }
 
+export type OptimisticSaleLog = {
+  productId: string;
+  quantity: number;
+};
+
 export default function DashboardClient({
   products,
   todaySales,
