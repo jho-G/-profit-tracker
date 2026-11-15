@@ -55,21 +55,29 @@ export async function createSale(formData: FormData) {
   const productId = sanitizeString(formData.get("product_id"));
   const quantityRaw = parseQuantity(formData.get("quantity"));
   const soldAtRaw = parseSoldAt(formData.get("sold_at"));
+  const source = sanitizeString(formData.get("source"));
+
+  const errorRedirect = (err: string) => {
+    if (source === "sales") {
+      redirect(`/dashboard/sales/new?error=${err}`);
+    }
+    redirect(`/dashboard?tab=sell&error=${err}`);
+  };
 
   if (!productId) {
-    redirect("/dashboard?tab=sell&error=missing-product");
+    errorRedirect("missing-product");
   }
 
   if (quantityRaw === null) {
-    redirect("/dashboard?tab=sell&error=invalid-quantity");
+    errorRedirect("invalid-quantity");
   }
 
   if (quantityRaw <= 0) {
-    redirect("/dashboard?tab=sell&error=quantity-must-be-positive");
+    errorRedirect("quantity-must-be-positive");
   }
 
   if (!soldAtRaw) {
-    redirect("/dashboard?tab=sell&error=invalid-sold-at");
+    errorRedirect("invalid-sold-at");
   }
 
   const { data: product, error: productError } = await supabase
@@ -109,11 +117,14 @@ export async function createSale(formData: FormData) {
   ]);
 
   if (insertError) {
-    redirect("/dashboard?tab=sell&error=record-sale-failed");
+    errorRedirect("record-sale-failed");
   }
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/sales");
+  if (source === "sales") {
+    redirect("/dashboard/sales");
+  }
   redirect("/dashboard?tab=sell");
 }
 

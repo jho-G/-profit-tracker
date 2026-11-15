@@ -82,6 +82,7 @@ export default async function NewSalePage({ searchParams }: { searchParams?: Pro
           )}
 
           <form action={createSale} className="mt-8 space-y-4">
+            <input type="hidden" name="source" value="sales" />
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">
                 Product <span className="text-red-600">*</span>
