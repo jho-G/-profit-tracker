@@ -181,6 +181,71 @@ export default function DashboardClient({
     };
   }, [activeTab, qrDataUrl]);
 
+  // Instant optimistic sale logging (0ms latency for cashier)
+  const handleLogSale = async (product: Product, quantity: number) => {
+    if (quantity <= 0) return;
+
+    const itemProfit = (Number(product.selling_price) - Number(product.cost_price)) * quantity;
+    const itemRevenue = Number(product.selling_price) * quantity;
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const nowIso = new Date().toISOString();
+
+    const tempSale: Sale = {
+      id: tempId,
+      sold_at: nowIso,
+      product_name_snapshot: product.name,
+      quantity,
+      cost_price_snapshot: Number(product.cost_price),
+      selling_price_snapshot: Number(product.selling_price),
+      profit: itemProfit,
+      restaurant_id: restaurantId,
+    };
+
+    // 1. Instant optimistic update
+    setTodayProfit((prev) => prev + itemProfit);
+    setTodayRevenue((prev) => prev + itemRevenue);
+    setAllProfit((prev) => prev + itemProfit);
+    setTodaySalesState((prev) => [tempSale, ...prev]);
+    setRecentSalesState((prev) => [tempSale, ...prev.slice(0, 9)]);
+
+    // 2. Background persistence
+    try {
+      const res = await fetch("/api/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity,
+          soldAt: nowIso,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to record sale");
+      }
+
+      // Replace temporary ID with confirmed database record
+      if (data.sale?.id) {
+        setTodaySalesState((prev) =>
+          prev.map((s) => (s.id === tempId ? { ...s, id: data.sale.id } : s))
+        );
+        setRecentSalesState((prev) =>
+          prev.map((s) => (s.id === tempId ? { ...s, id: data.sale.id } : s))
+        );
+      }
+    } catch (err: unknown) {
+      console.error("Sale logging failed, rolling back:", err);
+      // Rollback optimistic update
+      setTodayProfit((prev) => prev - itemProfit);
+      setTodayRevenue((prev) => prev - itemRevenue);
+      setAllProfit((prev) => prev - itemProfit);
+      setTodaySalesState((prev) => prev.filter((s) => s.id !== tempId));
+      setRecentSalesState((prev) => prev.filter((s) => s.id !== tempId));
+      alert(err instanceof Error ? err.message : "Failed to record sale. Please try again.");
+    }
+  };
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f8f4ee] px-3 py-6 sm:px-4 sm:py-8">
       <div className="mx-auto w-full max-w-[480px] rounded-[2rem] border border-stone-200 bg-white shadow-sm">
@@ -235,7 +300,8 @@ export default function DashboardClient({
             <SellTab
               activeProducts={activeProducts}
               productGroups={productGroups}
-              recentSales={recentSales}
+              recentSales={recentSalesState}
+              onLogSale={handleLogSale}
               money={money}
             />
           )}
@@ -286,11 +352,13 @@ function SellTab({
   activeProducts,
   productGroups,
   recentSales,
+  onLogSale,
   money,
 }: {
   activeProducts: Product[];
   productGroups: Map<string, { quantity: number; profit: number }>;
   recentSales: Sale[];
+  onLogSale: (product: Product, quantity: number) => Promise<void>;
   money: Intl.NumberFormat;
 }) {
   return (
@@ -300,29 +368,12 @@ function SellTab({
       ) : (
         <div className="space-y-3">
           {activeProducts.map((product) => (
-            <div key={product.id} className="rounded-2xl border border-stone-200 bg-white p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-black text-stone-900">{product.name}</div>
-                  <div className="mt-1 flex flex-wrap gap-2 text-[11px] font-semibold text-stone-500">
-                    <span>cost {money.format(product.cost_price)}</span>
-                    <span>·</span>
-                    <span>sell {money.format(product.selling_price)}</span>
-                    <span>·</span>
-                    <span>profit {money.format(product.selling_price - product.cost_price)}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <form action={createSale} className="flex items-center gap-2">
-                    <input type="hidden" name="product_id" value={product.id} />
-                    <input type="hidden" name="sold_at" value={new Date().toISOString()} />
-                    <label className="sr-only" htmlFor={`quantity-${product.id}`}>Quantity</label>
-                    <input id={`quantity-${product.id}`} name="quantity" type="number" min="1" step="1" defaultValue={1} required className="w-14 rounded-xl border border-stone-300 bg-white px-2 py-2 text-center text-sm font-semibold text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
-                    <button type="submit" className="rounded-xl bg-green-700 px-4 py-2 text-xs font-black text-white transition hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700/30">Log sale</button>
-                  </form>
-                </div>
-              </div>
-            </div>
+            <ProductSaleCard
+              key={product.id}
+              product={product}
+              onLogSale={onLogSale}
+              money={money}
+            />
           ))}
         </div>
       )}
@@ -369,6 +420,74 @@ function SellTab({
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function ProductSaleCard({
+  product,
+  onLogSale,
+  money,
+}: {
+  product: Product;
+  onLogSale: (product: Product, quantity: number) => Promise<void>;
+  money: Intl.NumberFormat;
+}) {
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [justLogged, setJustLogged] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (quantity <= 0 || loading) return;
+    setLoading(true);
+    setJustLogged(true);
+    await onLogSale(product, quantity);
+    setLoading(false);
+    setTimeout(() => setJustLogged(false), 1200);
+  };
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-sm font-black text-stone-900">{product.name}</div>
+          <div className="mt-1 flex flex-wrap gap-2 text-[11px] font-semibold text-stone-500">
+            <span>cost {money.format(product.cost_price)}</span>
+            <span>·</span>
+            <span>sell {money.format(product.selling_price)}</span>
+            <span>·</span>
+            <span>profit {money.format(product.selling_price - product.cost_price)}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <label className="sr-only" htmlFor={`quantity-${product.id}`}>Quantity</label>
+            <input
+              id={`quantity-${product.id}`}
+              name="quantity"
+              type="number"
+              min="1"
+              step="1"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              required
+              className="w-14 rounded-xl border border-stone-300 bg-white px-2 py-2 text-center text-sm font-semibold text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10"
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className={`rounded-xl px-4 py-2 text-xs font-black text-white transition focus:outline-none focus:ring-2 ${
+                justLogged
+                  ? "bg-emerald-600 focus:ring-emerald-500/30"
+                  : "bg-green-700 hover:bg-green-800 focus:ring-green-700/30"
+              }`}
+            >
+              {justLogged ? "✓ Logged" : "Log sale"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
