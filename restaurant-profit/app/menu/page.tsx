@@ -1,5 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import { DEFAULT_MENU_ITEMS } from "@/lib/menu-data";
+import { DEFAULT_MENU_ITEMS, MENU_ORIGINAL_PHOTOS } from "@/lib/menu-data";
 
 type MenuItem = {
   restaurant_id: string;
@@ -161,6 +161,51 @@ export default async function PublicMenuPage({
             ))}
           </nav>
         )}
+
+        {/* ORIGINAL MENU PHOTOS (User Uploaded Menu Sheets) */}
+        <section aria-label="የተያያዙ የምግብ ማውጫ ፎቶዎች" className="mt-14 mb-16">
+          <div className="mb-6 text-center">
+            <span className="rounded-full bg-[#f3e3d3] px-3.5 py-1 text-xs font-black tracking-wider text-[#b64e20] uppercase">
+              ኦሪጅናል ማውጫ
+            </span>
+            <h3 className="mt-2 text-2xl font-black text-[#3c251b] sm:text-3xl">
+              የምግብ ማውጫ ፎቶዎች
+            </h3>
+            <p className="mt-1.5 text-xs text-[#785f50]">
+              በትልቁ ለማየት ፎቶውን ይጫኑ
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+            {MENU_ORIGINAL_PHOTOS.map((photo) => (
+              <a
+                key={photo.id}
+                href={photo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative overflow-hidden rounded-[24px] border border-[#e5cfb9] bg-[#fffaf4] shadow-[0_12px_36px_rgba(91,51,29,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(91,51,29,0.16)]"
+              >
+                <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#e0cdbc]">
+                  <img
+                    src={photo.url}
+                    alt={photo.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-85 group-hover:opacity-75 transition" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <p className="text-base font-black drop-shadow-md">
+                      {photo.title}
+                    </p>
+                    <p className="mt-1 text-xs text-white/90 drop-shadow">
+                      {photo.description}
+                    </p>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
 
         {items.length === 0 ? (
           <div className="mx-auto mt-16 max-w-xl rounded-[24px] border border-[#e5cfb9] bg-[#fbf6ef] px-6 py-12 text-center shadow-[0_18px_50px_rgba(91,51,29,0.06)]">

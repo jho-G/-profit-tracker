@@ -8,7 +8,7 @@ export type MenuItemData = {
   cost_price: number;
   category: string;
   description: string;
-  image_url: string;
+  image_url: string | null;
 };
 
 export const MENU_CATEGORIES = [
@@ -34,7 +34,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 150,
     category: "የጾም ቁርስ",
     description: "በበርበሬ እና በቅመም የተቁላላ የኢንጀራ ፍርፍር / Traditional spiced torn injera in savory berbere sauce",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-bf-2",
@@ -46,7 +46,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 100,
     category: "የጾም ቁርስ",
     description: "በቅመም እና በዘይት የተቁላላ የዳቦ ፍርፍር / Fresh bread chunks tossed in spiced berbere reduction",
-    image_url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-bf-3",
@@ -58,7 +58,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 120,
     category: "የጾም ቁርስ",
     description: "የተፈጨ ባቄላ በቲማቲም፣ በሽንኩርት እና በቃሪያ / Simmered fava beans with diced onions, tomatoes, and jalapeños",
-    image_url: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-bf-4",
@@ -70,7 +70,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 120,
     category: "የጾም ቁርስ",
     description: "በቅመም እና በዘይት የተዘጋጀ ጣፋጭ ስንዴ / Cracked wheat porridge gently cooked with aromatic spices",
-    image_url: "https://images.unsplash.com/photo-1586511925508-a4c6a7234978?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ==========================================
@@ -86,7 +86,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 170,
     category: "የጾም ምሳ",
     description: "ሽሮ፣ ምስር፣ አትክልት፣ ጎመን እና ሰላጣ በኢንጀራ / Platter of mixed fasting stews: shiro, misir, greens, and salad on injera",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-2",
@@ -98,7 +98,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 140,
     category: "የጾም ምሳ",
     description: "በሽንኩርት እና በነጭ ሽንኩርት የተቁላላ የሽሮ ወጥ / Classic savory chickpea stew slow-cooked with garlic and spices",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-3",
@@ -110,7 +110,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 170,
     category: "የጾም ምሳ",
     description: "ተጨማሪ ቅመማ ቅመሞች ያሉት የቤት ውስጥ ስፔሻል ሽሮ / House special shiro with rich aromatic seasoning",
-    image_url: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-4",
@@ -122,7 +122,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 170,
     category: "የጾም ምሳ",
     description: "በሸክላ ድስት የሚንተከተክ ትኩስ ወፍራም ሽሮ / Thick, sizzling hot shiro stew served bubbly in traditional clay pot",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-5",
@@ -134,7 +134,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 150,
     category: "የጾም ምሳ",
     description: "በቲማቲም ስጎ የተዘጋጀ ጣፋጭ ፓስታ / Spaghetti with seasoned Ethiopian style rich tomato sauce",
-    image_url: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-6",
@@ -146,7 +146,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 220,
     category: "የጾም ምሳ",
     description: "በተመረጡ አትክልቶችና ቅመማ ቅመሞች የተዘጋጀ ስፔሻል ፓስታ / Chef's special pasta loaded with herbs and roasted vegetables",
-    image_url: "https://images.unsplash.com/photo-1621996346565-e3d5d6281691?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-7",
@@ -158,7 +158,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የጾም ምሳ",
     description: "በጥቅል ጎመን፣ ካሮትና ድንች የተጠበሰ ፓስታ / Pasta tossed with sauteed cabbage, carrots, and sweet peppers",
-    image_url: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-8",
@@ -170,7 +170,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የጾም ምሳ",
     description: "በተቆላ የተፈጨ ተልባና ቅመም የተበጠበጠ ፍትፍት / Roasted ground flaxseed broth tossed with torn injera",
-    image_url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-9",
@@ -182,7 +182,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የጾም ምሳ",
     description: "ግማሽ ሽሮ እና ግማሽ ፍርፍር በአንድ ላይ / Favorite combo platter: half savory shiro and half spicy firfir",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-10",
@@ -194,7 +194,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 140,
     category: "የጾም ምሳ",
     description: "ትኩስ የቲማቲም ሰላጣ በኢንጀራ ፍትፍት / Chilled diced tomatoes, onions, and jalapeños tossed with injera",
-    image_url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-11",
@@ -206,7 +206,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የጾም ምሳ",
     description: "በበርበሬና በቅመማ ቅመም የበሰለ ድንች ወጥ / Tender potato chunks simmered in aromatic berbere red stew",
-    image_url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-12",
@@ -218,7 +218,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የጾም ምሳ",
     description: "በስጎ የበሰለ የድርቆሽ ኢንጀራ ፍርፍር / Crisp dried injera pieces rehydrated in spiced berbere stew",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-13",
@@ -230,7 +230,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የጾም ምሳ",
     description: "በበርበሬና ነጭ ሽንኩርት የበሰለ ቀይ ምስር ወጥ / Spiced split red lentil stew simmered with garlic and ginger",
-    image_url: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-14",
@@ -242,7 +242,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 320,
     category: "የጾም ምሳ",
     description: "ሙሉ ባህላዊ አገልግል በኢንጀራና በልዩ ልዩ ወጦች የተሞላ / Full traditional agelgil platter with assorted stews and rolls",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-15",
@@ -254,7 +254,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 240,
     category: "የጾም ምሳ",
     description: "ግማሽ ባህላዊ አገልግል ለብቻ ወይም ለሁለት / Half-portion traditional agelgil basket with fasting stews",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-16",
@@ -266,7 +266,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 380,
     category: "የጾም ምሳ",
     description: "ለቡድን የሚሆን ትልቅ የጾም በየአይነት ማዕድ / Large shared group vegetarian banquet platter with all toppings",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "fasting-lunch-17",
@@ -278,7 +278,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 210,
     category: "የጾም ምሳ",
     description: "በካሮት፣ አተርና ድንች የተጠበሰ ጣፋጭ ሩዝ / Aromatic fried rice tossed with seasoned garden vegetables",
-    image_url: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ==========================================
@@ -294,7 +294,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 190,
     category: "የፍስክ ቁርስ",
     description: "በደቀቀ ስጋና ቅመም የተቁላላ እንቁላል / Farm eggs scrambled with seasoned minced beef, tomatoes, and peppers",
-    image_url: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-2",
@@ -306,7 +306,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 180,
     category: "የፍስክ ቁርስ",
     description: "በእንቁላል የተጠበሰ ሞቅ ያለ ፓስታ / Warm spaghetti tossed with seasoned scrambled eggs and light herb sauce",
-    image_url: "https://images.unsplash.com/photo-1621996346565-e3d5d6281691?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-3",
@@ -318,7 +318,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 120,
     category: "የፍስክ ቁርስ",
     description: "በሽንኩርት፣ ቲማቲምና ቃሪያ የተጠበሰ እንቁላል / Classic scrambled eggs with onions, tomatoes, and fresh jalapeños",
-    image_url: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-4",
@@ -330,7 +330,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 140,
     category: "የፍስክ ቁርስ",
     description: "በበርበሬና ሽንኩርት ስጎ የበሰለ እንቁላል / Eggs gently poached in rich berbere-onion sauce reduction",
-    image_url: "https://images.unsplash.com/photo-1582169296194-e4d644c48063?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-5",
@@ -342,7 +342,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 100,
     category: "የፍስክ ቁርስ",
     description: "በትኩስ ዳቦ የተዘጋጀ የእንቁላል ሳንድዊች / Fluffy seasoned egg omelette inside crusty fresh baguette",
-    image_url: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-6",
@@ -354,7 +354,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 220,
     category: "የፍስክ ቁርስ",
     description: "በቅቤ፣ በሚጥሚጣና ሽንኩርት የተዘጋጀ ባህላዊ ዱለት / Minced tripe, liver, and lean beef sauteed with spiced butter & mitmita",
-    image_url: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-7",
@@ -366,7 +366,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 250,
     category: "የፍስክ ቁርስ",
     description: "በንጥር ቅቤ እና በተመረጠ ስጋ የተዘጋጀ ስፔሻል ዱለት / Premium dulet cooked with extra niter kibbeh and fresh herbs",
-    image_url: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-8",
@@ -378,7 +378,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 180,
     category: "የፍስክ ቁርስ",
     description: "የበሰለ የበሬ ምላስ በሽንብራ ወጥ ተዘጋጅቶ / Tender braised beef tongue simmered in spiced chickpea gravy",
-    image_url: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-9",
@@ -390,7 +390,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 160,
     category: "የፍስክ ቁርስ",
     description: "በቅቤና በእንቁላል የተዘጋጀ የቂንጬ ቁርስ / Cracked wheat porridge infused with seasoned scrambled eggs and butter",
-    image_url: "https://images.unsplash.com/photo-1586511925508-a4c6a7234978?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-10",
@@ -402,7 +402,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 140,
     category: "የፍስክ ቁርስ",
     description: "በንጥር የሀበሻ ቅቤ የተዘጋጀ ልስላሴ ያለው ቂንጬ / Cracked wheat simmered soft and enriched with spiced clarified butter",
-    image_url: "https://images.unsplash.com/photo-1586511925508-a4c6a7234978?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-11",
@@ -414,7 +414,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 150,
     category: "የፍስክ ቁርስ",
     description: "በእንቁላል፣ ቅቤ እና አይብ የተደገፈ ስፔሻል ፉል / Fava beans topped with scrambled egg, spiced butter, and fresh cheese",
-    image_url: "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-12",
@@ -426,7 +426,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 100,
     category: "የፍስክ ቁርስ",
     description: "ሞቅ ያለ ለስላሳ ፓንኬክ በማር / Freshly prepared golden fluffy pancakes served warm with honey",
-    image_url: "https://images.unsplash.com/photo-1528207776546-365bb710ee93?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-13",
@@ -438,7 +438,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 130,
     category: "የፍስክ ቁርስ",
     description: "ባህላዊ የቡላ ገንፎ በቅቤና በሚጥሚጣ / Traditional false banana porridge served with a pool of spiced butter & berbere",
-    image_url: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-14",
@@ -450,7 +450,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 170,
     category: "የፍስክ ቁርስ",
     description: "በወተት የበሰለ ለስላሳ የቡላ ገንፎ በንጥር ቅቤ / Rich bula porridge cooked with fresh milk and pure niter kibbeh",
-    image_url: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-15",
@@ -462,7 +462,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 280,
     category: "የፍስክ ቁርስ",
     description: "በትኩስ የቅቤ ዱለት ያሸበረቀ ልዩ የቡላ ገንፎ / Specialty warm bula porridge topped with freshly cooked savory dulet",
-    image_url: "https://images.unsplash.com/photo-1505253716362-afaea1d3d1af?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-bf-16",
@@ -474,7 +474,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 210,
     category: "የፍስክ ቁርስ",
     description: "በለስላሳ ስጋ፣ በነጭ ሽንኩርትና ቅቤ የበሰለ ጎመን / Collard greens slow simmered with tender beef chunks and garlic butter",
-    image_url: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ==========================================
@@ -490,7 +490,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 580,
     category: "የፍስክ ምሳ",
     description: "ጥብስ፣ ቀይ ወጥ፣ አልጫ እና ልዩ ልዩ ምግቦች የያዘ ትልቅ ድግስ / Ultimate royal feast platter with sizzling tibs, stews, and sides",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-2",
@@ -502,7 +502,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 340,
     category: "የፍስክ ምሳ",
     description: "በሽንኩርት፣ ሮዝመሪና ቃሪያ የተጠበሰ የፍሬሽ የበሬ ጥብስ / Tender cubed beef pan-fried with onions, rosemary, and green chillies",
-    image_url: "https://images.unsplash.com/photo-1603360946369-dc9bb6258143?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-3",
@@ -514,7 +514,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 330,
     category: "የፍስክ ምሳ",
     description: "በእርድና ዝንጅብል መረቅ የበሰለ የበሬ ስጋ ቅቀል / Bone-in beef slowly simmered in rich golden turmeric-ginger broth",
-    image_url: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-4",
@@ -526,7 +526,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 240,
     category: "የፍስክ ምሳ",
     description: "በጣፋጭ የበሬ ጥብስ የተዘጋጀ ሞቅ ያለ ፍርፍር / Savory beef tibs simmered in berbere sauce and folded with injera",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-5",
@@ -538,7 +538,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 240,
     category: "የፍስክ ምሳ",
     description: "በደረቀ የቋንጣ ስጋና በቅመም የተቁላላ ፍርፍር / Air-dried cured beef strips cooked in spicy sauce tossed with injera",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-6",
@@ -550,7 +550,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 210,
     category: "የፍስክ ምሳ",
     description: "በስጋ መረቅና በርበሬ የበሰለ የኢንጀራ ፍርፍር / Tender chopped beef folded with soft shredded injera in rich sauce",
-    image_url: "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-7",
@@ -562,7 +562,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 210,
     category: "የፍስክ ምሳ",
     description: "የደቀቀ የበሬ ስጋ በበርበሬና አብሽ የበሰለ ወጥ / Finely minced beef stew slow simmered with berbere and fenugreek spices",
-    image_url: "https://images.unsplash.com/photo-1582169296194-e4d644c48063?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-8",
@@ -574,7 +574,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 190,
     category: "የፍስክ ምሳ",
     description: "ባህላዊ የበሬ ስጋ ቀይ ወጥ በበርበሬ / Traditional spicy beef red stew cooked with caramelized onions",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-9",
@@ -586,7 +586,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 220,
     category: "የፍስክ ምሳ",
     description: "የበሬ ቀይ ወጥ ከትኩስ የቤት እርጎ ጋር / Spicy beef qey wot served with cooling authentic fresh curd yogurt",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-10",
@@ -598,7 +598,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 190,
     category: "የፍስክ ምሳ",
     description: "በደቀቀ ስጋ የተቁላላ ልዩ የቦዘና ሽሮ / Signature clay-pot chickpea shiro simmered with savory minced beef",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-11",
@@ -610,7 +610,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 180,
     category: "የፍስክ ምሳ",
     description: "በንጥር የሀበሻ ቅቤ የተዘጋጀ ልስላሴ ያለው ሽሮ / Authentic shiro enriched with aromatic spiced clarified butter",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-12",
@@ -622,7 +622,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 190,
     category: "የፍስክ ምሳ",
     description: "በእንቁላል የተዘጋጀ ጣፋጭ የሽሮ ወጥ / Savory chickpea shiro stew enriched with simmered egg",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-13",
@@ -634,7 +634,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 190,
     category: "የፍስክ ምሳ",
     description: "በጣፋጭ የቋንጣ ስጋ የተዘጋጀ ልዩ ሽሮ / Classic bubbling shiro slow-cooked with air-dried jerky beef",
-    image_url: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-14",
@@ -646,7 +646,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 210,
     category: "የፍስክ ምሳ",
     description: "በስጋ ስጎ የተዘጋጀ ጣፋጭ ፓስታ / Spaghetti served with savory minced beef bolognese-style sauce",
-    image_url: "https://images.unsplash.com/photo-1621996346565-e3d5d6281691?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-15",
@@ -658,7 +658,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 270,
     category: "የፍስክ ምሳ",
     description: "በጣፋጭ የዶሮ ስጋ የተጠበሰ ሩዝ / Fragrant spiced rice served with seasoned tender chicken cuts",
-    image_url: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "meat-lunch-16",
@@ -670,7 +670,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 240,
     category: "የፍስክ ምሳ",
     description: "በለስላሳ የበሬ ስጋ የተጠበሰ ጣፋጭ ሩዝ / Fragrant seasoned rice topped with juicy sauteed beef and onions",
-    image_url: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ==========================================
@@ -686,7 +686,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 40,
     category: "መጠጦች",
     description: "ቀዝቃዛ ኮካ፣ ፋንታ፣ ስፕራይት ወይም አምቦ ዉሃ / Chilled soft drink (Coca-Cola/Sprite/Fanta) or sparkling Ambo water",
-    image_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "drinks-2",
@@ -698,7 +698,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 45,
     category: "መጠጦች",
     description: "ንፁህ የታሸገ የሁለት ሊትር ውሃ / 2-liter pure bottled mineral spring water",
-    image_url: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "drinks-3",
@@ -710,7 +710,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 30,
     category: "መጠጦች",
     description: "ንፁህ የታሸገ የአንድ ሊትር ውሃ / 1-liter pure bottled mineral spring water",
-    image_url: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "drinks-4",
@@ -722,7 +722,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 25,
     category: "መጠጦች",
     description: "ንፁህ የታሸገ የግማሽ ሊትር ውሃ / 500ml pure bottled mineral spring water",
-    image_url: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "drinks-5",
@@ -734,7 +734,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 60,
     category: "መጠጦች",
     description: "ቀዝቃዛ አንደኛ ማልት መጠጥ / Refreshing cold non-alcoholic brewed malt drink",
-    image_url: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 
   // ==========================================
@@ -750,7 +750,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 15,
     category: "ትኩስ ነገሮች",
     description: "በባህላዊ ጀበና የተፈላ ትኩስ ሀበሻ ቡና / Authentic freshly brewed traditional jebena Ethiopian coffee",
-    image_url: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "hot-2",
@@ -762,7 +762,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 10,
     category: "ትኩስ ነገሮች",
     description: "በቀረፋና በቁንዶ በርበሬ የተፈላ ትኩስ ሻይ / Fragrant hot black tea spiced with cinnamon and cloves",
-    image_url: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "hot-3",
@@ -774,7 +774,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 25,
     category: "ትኩስ ነገሮች",
     description: "ጣፋጭና ሞቅ ያለ የለዉዝ ትኩስ መጠጥ / Warm comforting sweetened roasted peanut hot drink",
-    image_url: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "hot-4",
@@ -786,7 +786,7 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 15,
     category: "ትኩስ ነገሮች",
     description: "በዝንጅብልና በቅመማ ቅመም የተፈላ ባህላዊ ቀሽር / Traditional spiced coffee husk herbal tea with ginger",
-    image_url: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
   {
     id: "hot-5",
@@ -798,6 +798,21 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     cost_price: 15,
     category: "ትኩስ ነገሮች",
     description: "ግማሽ ሻይ እና ግማሽ ቡና በአንድ ሲኒ / Distinctive half tea and half coffee layered hot beverage",
-    image_url: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=800&q=80",
+    image_url: null,
   },
 ];
+
+export const MENU_ORIGINAL_PHOTOS = [
+  {
+    id: "menu-fasting",
+    title: "የጾም ምግቦች እና መጠጦች (Fasting & Drinks)",
+    description: "የጾም ቁርስ፣ የጾም ምሳ፣ መጠጦች እና ትኩስ ነገሮች",
+    url: "/images/menu-photo-1.jpg",
+  },
+  {
+    id: "menu-meat",
+    title: "የፍስክ ምግቦች (Non-Fasting Dishes)",
+    description: "የፍስክ ቁርስ እና የፍስክ ምሳ",
+    url: "/images/menu-photo-2.jpg",
+  },
+] as const;

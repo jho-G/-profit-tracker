@@ -66,13 +66,15 @@ async function main() {
 
   // Dynamically read items
   const menuTs = readFileSync(resolve(__dirname, "../lib/menu-data.ts"), "utf8");
-  const regex = /product_name:\s*"([^"]+)",\s*selling_price:\s*([0-9.]+),\s*cost_price:\s*([0-9.]+),\s*category:\s*"([^"]+)",\s*description:\s*"([^"]+)",\s*image_url:\s*"([^"]+)"/g;
+  const regex = /product_name:\s*"([^"]+)",\s*selling_price:\s*([0-9.]+),\s*cost_price:\s*([0-9.]+),\s*category:\s*"([^"]+)",\s*description:\s*"([^"]+)",\s*image_url:\s*(null|"[^"]*")/g;
   
   let match;
   let count = 0;
   while ((match = regex.exec(menuTs)) !== null) {
-    const [, name, selling_price, cost_price, category, description, image_url] = match;
+    const [, name, selling_price, cost_price, category, description, raw_img] = match;
     count++;
+
+    const image_url = raw_img === "null" ? null : raw_img.replace(/^"|"$/g, "");
 
     const payload = {
       restaurant_id: restaurant.id,
