@@ -1,4 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
+import { DEFAULT_MENU_ITEMS } from "@/lib/menu-data";
 
 type MenuItem = {
   restaurant_id: string;
@@ -48,14 +49,26 @@ export default async function PublicMenuPage({
     query = query.eq("restaurant_id", params.restaurantId);
   }
 
-  const { data, error } = await query;
+  let items: MenuItem[] = [];
+  try {
+    const { data, error } = await query;
+    if (!error && data && data.length > 0) {
+      items = data as MenuItem[];
+    } else {
+      items = DEFAULT_MENU_ITEMS;
+    }
+  } catch {
+    items = DEFAULT_MENU_ITEMS;
+  }
 
-  if (error) {
+  if (items.length === 0) {
     return <UnavailableMenu />;
   }
 
-  const items = (data ?? []) as MenuItem[];
-  const heroImage = items.find((item) => item.image_url)?.image_url ?? null;
+  const heroImage =
+    items.find((item) => item.product_name.includes("ሽሮ") && item.image_url)?.image_url ??
+    items.find((item) => item.image_url)?.image_url ??
+    null;
   const groups = groupMenuItems(items);
   const categories = groups.map((group) => group.label);
 
@@ -288,15 +301,18 @@ function groupMenuItems(items: MenuItem[]) {
   for (const item of items) {
     const rawCategory = item.category?.trim() || "";
     const label = rawCategory || "ምግብ";
-    const key = rawCategory.toLowerCase() || "food";
-    const isDrinks = drinkWords.some((word) => key.includes(word));
+    const key = rawCategory || "ምግብ";
+    const isDrinks =
+      key === "መጠጦች" ||
+      key === "ትኩስ ነገሮች" ||
+      drinkWords.some((word) => key.toLowerCase().includes(word));
 
     const existing = groups.get(key);
     if (existing) {
       existing.items.push(item);
     } else {
       groups.set(key, {
-        id: `${slugify(label)}-${groups.size}`,
+        id: slugify(label),
         label,
         items: [item],
         isDrinks,
@@ -304,7 +320,23 @@ function groupMenuItems(items: MenuItem[]) {
     }
   }
 
-  return Array.from(groups.values());
+  const categoryOrder = [
+    "የጾም ቁርስ",
+    "የጾም ምሳ",
+    "የፍስክ ቁርስ",
+    "የፍስክ ምሳ",
+    "መጠጦች",
+    "ትኩስ ነገሮች",
+  ];
+
+  return Array.from(groups.values()).sort((a, b) => {
+    const aIndex = categoryOrder.indexOf(a.label);
+    const bIndex = categoryOrder.indexOf(b.label);
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+    return a.label.localeCompare(b.label);
+  });
 }
 
 function slugify(value: string) {

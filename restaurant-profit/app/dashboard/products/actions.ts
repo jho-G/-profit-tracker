@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_MENU_ITEMS } from "@/lib/menu-data";
 
 function sanitizeString(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value.trim() : "";
@@ -180,4 +181,31 @@ export async function toggleProductStatus(productId: string, active: boolean) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/products");
   redirect("/dashboard?tab=menu");
+}
+
+export async function seedMenuProducts() {
+  const supabase = await createClient();
+  const owner = await getOwnerRestaurant(supabase);
+
+  for (const item of DEFAULT_MENU_ITEMS) {
+    await supabase.from("products").upsert(
+      {
+        restaurant_id: owner.restaurant_id,
+        name: item.product_name,
+        category: item.category,
+        cost_price: item.cost_price,
+        selling_price: item.selling_price,
+        description: item.description,
+        image_url: item.image_url,
+        active: true,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "restaurant_id,name" }
+    );
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/products");
+  revalidatePath("/menu");
+  redirect("/dashboard/products");
 }

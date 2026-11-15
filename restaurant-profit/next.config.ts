@@ -32,6 +32,14 @@ function loadEnvLocal(): Record<string, string> {
 
 const nextConfig: NextConfig = {
   env: loadEnvLocal(),
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
   turbopack: {
     root: process.cwd(),
   },

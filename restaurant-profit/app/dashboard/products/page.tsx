@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { toggleProductStatus } from "./actions";
+import { toggleProductStatus, seedMenuProducts } from "./actions";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -76,7 +76,16 @@ export default async function ProductsPage() {
                 Product management
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              <form action={seedMenuProducts}>
+                <button
+                  type="submit"
+                  className="rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 transition"
+                  title="Seed/Sync all 63 menu items from the official menu photos"
+                >
+                  ⚡ Sync Menu (63 Items)
+                </button>
+              </form>
               <Link
                 href="/dashboard/products/new"
                 className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800"
