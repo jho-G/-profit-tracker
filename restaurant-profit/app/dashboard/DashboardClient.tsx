@@ -105,9 +105,7 @@ export default function DashboardClient({
   const [allProfit, setAllProfit] = useState(initialAllProfit);
   const [todaySalesState, setTodaySalesState] = useState<Sale[]>(todaySales);
   const [recentSalesState, setRecentSalesState] = useState<Sale[]>(recentSales);
-  const [toast, setToast] = useState<{ id: number; message: string; type: "success" | "error" } | null>(null);
-
-  useEffect(() => {
+  const [toast, setToast] = useState<{ id: number; message: string; type: "success" | "error" } | null>(() => {
     if (initialError) {
       const decoded = decodeURIComponent(initialError);
       const isFkError =
@@ -118,11 +116,13 @@ export default function DashboardClient({
       const userMsg = isFkError
         ? "ይህ ምግብ የቀደመ የሽያጭ ታሪክ ስላለው ሊሰረዝ አይችልም። እባክዎ ከሜኑ ላይ ማጥፋት (Deactivate/Disable) ያድርጉት።"
         : decoded;
-      setToast({ id: Date.now(), message: userMsg, type: "error" });
-    } else if (initialMessage) {
-      setToast({ id: Date.now(), message: decodeURIComponent(initialMessage), type: "success" });
+      return { id: Date.now(), message: userMsg, type: "error" };
     }
-  }, [initialError, initialMessage]);
+    if (initialMessage) {
+      return { id: Date.now(), message: decodeURIComponent(initialMessage), type: "success" };
+    }
+    return null;
+  });
 
   // Dynamic history state (scalable: fetched on-demand per filter)
   const initialTodayMeals = todaySalesState.reduce((sum, s) => sum + Number(s.quantity ?? 0), 0);
