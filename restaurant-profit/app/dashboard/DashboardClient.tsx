@@ -355,7 +355,7 @@ export default function DashboardClient({
 
           {activeTab === "history" && (
             <HistoryTab
-              allProfit={initialAllProfit}
+              allProfit={allProfit}
               historyData={historySales}
               historyFilter={historyFilter}
               historyMeals={historyMeals}
