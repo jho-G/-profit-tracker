@@ -58,6 +58,9 @@ interface DashboardClientProps {
   initialAllProfit: number;
   initialTodayProfit: number;
   initialTodayRevenue: number;
+  initialTab?: string;
+  initialError?: string;
+  initialMessage?: string;
 }
 
 export type OptimisticSaleLog = {
@@ -73,8 +76,23 @@ export default function DashboardClient({
   initialAllProfit,
   initialTodayProfit,
   initialTodayRevenue,
+  initialTab,
+  initialError,
+  initialMessage,
 }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("sell");
+  const validTabs: Tab[] = ["sell", "history", "menu", "qr"];
+  const [activeTab, setActiveTabState] = useState<Tab>(
+    initialTab && validTabs.includes(initialTab as Tab) ? (initialTab as Tab) : "sell"
+  );
+
+  const setActiveTab = (tab: Tab) => {
+    setActiveTabState(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      window.history.replaceState(null, "", url.toString());
+    }
+  };
   const [historyFilter, setHistoryFilter] = useState<string>("today");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -88,6 +106,23 @@ export default function DashboardClient({
   const [todaySalesState, setTodaySalesState] = useState<Sale[]>(todaySales);
   const [recentSalesState, setRecentSalesState] = useState<Sale[]>(recentSales);
   const [toast, setToast] = useState<{ id: number; message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (initialError) {
+      const decoded = decodeURIComponent(initialError);
+      const isFkError =
+        decoded.toLowerCase().includes("foreign key") ||
+        decoded.toLowerCase().includes("violates") ||
+        decoded.toLowerCase().includes("constraint") ||
+        decoded.toLowerCase().includes("product_id");
+      const userMsg = isFkError
+        ? "ይህ ምግብ የቀደመ የሽያጭ ታሪክ ስላለው ሊሰረዝ አይችልም። እባክዎ ከሜኑ ላይ ማጥፋት (Deactivate/Disable) ያድርጉት።"
+        : decoded;
+      setToast({ id: Date.now(), message: userMsg, type: "error" });
+    } else if (initialMessage) {
+      setToast({ id: Date.now(), message: decodeURIComponent(initialMessage), type: "success" });
+    }
+  }, [initialError, initialMessage]);
 
   // Dynamic history state (scalable: fetched on-demand per filter)
   const initialTodayMeals = todaySalesState.reduce((sum, s) => sum + Number(s.quantity ?? 0), 0);

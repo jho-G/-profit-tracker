@@ -2,7 +2,15 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DashboardClient from "./DashboardClient";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ tab?: string; error?: string; message?: string }>;
+}) {
+  const params = searchParams ? await searchParams : {};
+  const initialTab = params.tab;
+  const initialError = params.error;
+  const initialMessage = params.message;
   const supabase = await createClient();
 
   const {
@@ -98,6 +106,9 @@ export default async function DashboardPage() {
       initialAllProfit={allProfit}
       initialTodayProfit={todayProfit}
       initialTodayRevenue={todayRevenue}
+      initialTab={initialTab}
+      initialError={initialError}
+      initialMessage={initialMessage}
     />
   );
 }
