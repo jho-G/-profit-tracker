@@ -1,0 +1,4 @@
+node_modules/
+.temp/
+supabase/.temp/
+.DS_Store
