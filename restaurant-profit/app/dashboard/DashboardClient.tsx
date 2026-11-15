@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toggleProductStatus, deleteProduct } from "./products/actions";
 import LogoutButton from "./LogoutButton";
 import ChangePasswordModal from "./ChangePasswordModal";
+import { getRecentEthiopianMonths, formatEthiopianDate } from "@/lib/ethiopian-calendar";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -70,6 +71,7 @@ export default function DashboardClient({
   const [historyFilter, setHistoryFilter] = useState<string>("today");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
+  const [selectedEthMonth, setSelectedEthMonth] = useState<string>("");
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
 
@@ -86,6 +88,7 @@ export default function DashboardClient({
     sales: Sale[];
     profit: number;
     meals: number;
+    revenue?: number;
   } | null>(null);
   const [historyLoading, setHistoryLoading] = useState<boolean>(false);
 
@@ -96,6 +99,7 @@ export default function DashboardClient({
   const historySales = isInitialToday ? todaySalesState : (queriedHistory?.sales ?? []);
   const historyProfit = isInitialToday ? todayProfit : (queriedHistory?.profit ?? 0);
   const historyMeals = isInitialToday ? initialTodayMeals : (queriedHistory?.meals ?? 0);
+  const historyRevenue = isInitialToday ? todayRevenue : (queriedHistory?.revenue ?? 0);
 
   const productGroups = new Map<string, { quantity: number; profit: number }>();
   for (const sale of todaySalesState) {
@@ -131,6 +135,7 @@ export default function DashboardClient({
               sales: data.sales ?? [],
               profit: Number(data.totalProfit ?? 0),
               meals: Number(data.totalMeals ?? 0),
+              revenue: Number(data.totalRevenue ?? 0),
             });
           }
         }
@@ -320,11 +325,10 @@ export default function DashboardClient({
                 key={key}
                 type="button"
                 onClick={() => setActiveTab(key)}
-                className={`flex flex-col sm:flex-row items-center justify-center gap-1 rounded-xl py-2 px-1 text-center text-[11px] sm:text-xs font-black transition touch-manipulation active:scale-95 ${
-                  activeTab === key
-                    ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
-                    : "text-stone-500 hover:text-stone-700"
-                }`}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1 rounded-xl py-2 px-1 text-center text-[11px] sm:text-xs font-black transition touch-manipulation active:scale-95 ${activeTab === key
+                  ? "bg-white text-stone-900 shadow-sm ring-1 ring-stone-200"
+                  : "text-stone-500 hover:text-stone-700"
+                  }`}
               >
                 <span className="text-sm sm:text-xs">{icon}</span>
                 <span>{label}</span>
@@ -360,12 +364,15 @@ export default function DashboardClient({
               historyFilter={historyFilter}
               historyMeals={historyMeals}
               historyProfit={historyProfit}
+              historyRevenue={historyRevenue}
               historyLoading={historyLoading}
               customStart={customStart}
               customEnd={customEnd}
+              selectedEthMonth={selectedEthMonth}
               setHistoryFilter={setHistoryFilter}
               setCustomStart={setCustomStart}
               setCustomEnd={setCustomEnd}
+              setSelectedEthMonth={setSelectedEthMonth}
               money={money}
             />
           )}
@@ -458,11 +465,10 @@ function SellTab({
             <button
               type="button"
               onClick={() => setSelectedCat("all")}
-              className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition touch-manipulation active:scale-95 ${
-                selectedCat === "all"
-                  ? "bg-stone-900 text-white"
-                  : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100"
-              }`}
+              className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition touch-manipulation active:scale-95 ${selectedCat === "all"
+                ? "bg-stone-900 text-white"
+                : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100"
+                }`}
             >
               All ({activeProducts.length})
             </button>
@@ -471,11 +477,10 @@ function SellTab({
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCat(cat)}
-                className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition touch-manipulation active:scale-95 ${
-                  selectedCat === cat
-                    ? "bg-stone-900 text-white"
-                    : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100"
-                }`}
+                className={`shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-bold transition touch-manipulation active:scale-95 ${selectedCat === cat
+                  ? "bg-stone-900 text-white"
+                  : "border border-stone-200 bg-stone-50 text-stone-600 hover:bg-stone-100"
+                  }`}
               >
                 {cat}
               </button>
@@ -578,11 +583,10 @@ function ProductSaleCard({
 
   return (
     <div
-      className={`rounded-2xl border p-3 sm:p-3.5 transition ${
-        justLogged
-          ? "border-emerald-300 bg-emerald-50/50"
-          : "border-stone-200 bg-white shadow-xs"
-      }`}
+      className={`rounded-2xl border p-3 sm:p-3.5 transition ${justLogged
+        ? "border-emerald-300 bg-emerald-50/50"
+        : "border-stone-200 bg-white shadow-xs"
+        }`}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -628,11 +632,10 @@ function ProductSaleCard({
           <button
             type="submit"
             disabled={loading}
-            className={`flex h-9 min-w-[70px] touch-manipulation items-center justify-center rounded-xl px-3 text-xs font-black text-white shadow-xs transition active:scale-95 ${
-              justLogged
-                ? "bg-emerald-600"
-                : "bg-green-700 hover:bg-green-800"
-            }`}
+            className={`flex h-9 min-w-[70px] touch-manipulation items-center justify-center rounded-xl px-3 text-xs font-black text-white shadow-xs transition active:scale-95 ${justLogged
+              ? "bg-emerald-600"
+              : "bg-green-700 hover:bg-green-800"
+              }`}
           >
             {justLogged ? "✓ Logged" : "+ Log"}
           </button>
@@ -643,8 +646,26 @@ function ProductSaleCard({
 }
 
 /* ============================================================
-   MENU TAB (Mobile-Optimized)
+   MENU TAB (Categorized & Mobile-Optimized)
 ============================================================ */
+
+const ADMIN_CATEGORY_ORDER = [
+  "የጾም ቁርስ",
+  "የጾም ምሳ",
+  "የፍስክ ቁርስ",
+  "የፍስክ ምሳ",
+  "መጠጦች",
+  "ትኩስ ነገሮች",
+];
+
+const ADMIN_CATEGORY_ICONS: Record<string, string> = {
+  "የጾም ቁርስ": "🥗",
+  "የጾም ምሳ": "🍲",
+  "የፍስክ ቁርስ": "🥩",
+  "የፍስክ ምሳ": "🍖",
+  "መጠጦች": "🥤",
+  "ትኩስ ነገሮች": "☕",
+};
 
 function MenuTab({
   activeProducts,
@@ -656,23 +677,69 @@ function MenuTab({
   money: Intl.NumberFormat;
 }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of activeProducts) {
+      if (p.category && p.category.trim()) {
+        set.add(p.category.trim());
+      }
+    }
+    return Array.from(set).sort((a, b) => {
+      const aIdx = ADMIN_CATEGORY_ORDER.indexOf(a);
+      const bIdx = ADMIN_CATEGORY_ORDER.indexOf(b);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, [activeProducts]);
 
   const filteredActive = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return activeProducts;
-    return activeProducts.filter(
-      (p) =>
+    return activeProducts.filter((p) => {
+      const matchCategory =
+        selectedCategory === "all" ||
+        (p.category && p.category.trim() === selectedCategory);
+      if (!matchCategory) return false;
+      if (!q) return true;
+      return (
         p.name.toLowerCase().includes(q) ||
         (p.category && p.category.toLowerCase().includes(q))
-    );
-  }, [activeProducts, searchTerm]);
+      );
+    });
+  }, [activeProducts, searchTerm, selectedCategory]);
+
+  const groupedActive = useMemo(() => {
+    const map = new Map<string, Product[]>();
+    for (const p of filteredActive) {
+      const cat = p.category?.trim() || "ሌሎች (Other)";
+      const list = map.get(cat) ?? [];
+      list.push(p);
+      map.set(cat, list);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => {
+      const aIdx = ADMIN_CATEGORY_ORDER.indexOf(a);
+      const bIdx = ADMIN_CATEGORY_ORDER.indexOf(b);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, [filteredActive]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-black text-stone-900">
-          Menu ({activeProducts.length} active)
-        </h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="text-base font-black text-stone-900">
+            የምግብና መጠጥ ዝርዝር ({activeProducts.length} ንቁ)
+          </h3>
+          <p className="text-[11px] font-semibold text-stone-500">
+            የተመደቡ ምግቦች በምድብ (Categorized Menu)
+          </p>
+        </div>
         <Link
           href="/dashboard/products/new"
           className="rounded-xl bg-stone-900 px-3.5 py-2 text-xs font-bold text-white transition hover:bg-stone-800 touch-manipulation active:scale-95"
@@ -690,8 +757,8 @@ function MenuTab({
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Filter products..."
-          className="w-full rounded-xl border border-stone-200 bg-stone-50 py-2 pl-9 pr-8 text-xs font-bold text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none"
+          placeholder="ምግብ በስም ወይም በምድብ ፈልግ... (ሽሮ፣ ዱለት፣ ጥብስ...)"
+          className="w-full rounded-xl border border-stone-200 bg-stone-50 py-2.5 pl-9 pr-8 text-xs font-bold text-stone-900 placeholder:text-stone-400 focus:border-stone-900 focus:bg-white focus:outline-none"
         />
         {searchTerm && (
           <button
@@ -704,69 +771,129 @@ function MenuTab({
         )}
       </div>
 
-      <div className="space-y-2.5">
-        {filteredActive.map((product) => (
-          <div key={product.id} className="rounded-2xl border border-stone-200 bg-white p-3 sm:p-4 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-              <div className="min-w-0">
-                <div className="text-sm font-black text-stone-900">{product.name}</div>
-                <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] font-semibold text-stone-500">
-                  <span>cost {money.format(product.cost_price)}</span>
-                  <span>·</span>
-                  <span>sell {money.format(product.selling_price)}</span>
-                  <span>·</span>
-                  <span className="font-bold text-green-700">+{money.format(product.selling_price - product.cost_price)}</span>
-                  {product.category && (
-                    <>
-                      <span>·</span>
-                      <span className="text-[10px] text-stone-400">{product.category}</span>
-                    </>
-                  )}
+      {/* Category Filter Pills */}
+      <nav aria-label="የምግብ ምድቦች" className="flex gap-1.5 overflow-x-auto pb-1 pt-0.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <button
+          type="button"
+          onClick={() => setSelectedCategory("all")}
+          className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-black transition active:scale-95 ${
+            selectedCategory === "all"
+              ? "bg-stone-900 text-white shadow-xs"
+              : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+          }`}
+        >
+          🌟 ሁሉም ({activeProducts.length})
+        </button>
+        {categories.map((cat) => {
+          const icon = ADMIN_CATEGORY_ICONS[cat] || "🍽️";
+          const count = activeProducts.filter((p) => p.category?.trim() === cat).length;
+          return (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedCategory(cat)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-black transition active:scale-95 ${
+                selectedCategory === cat
+                  ? "bg-amber-800 text-white shadow-xs"
+                  : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+              }`}
+            >
+              {icon} {cat} ({count})
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Categorized Product Sections */}
+      {groupedActive.length === 0 ? (
+        <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-xs text-stone-500">
+          ምንም የተገኘ ምግብ የለም።
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {groupedActive.map(([category, items]) => (
+            <section key={category} className="space-y-2.5">
+              <div className="flex items-center justify-between border-b border-stone-200 pb-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">{ADMIN_CATEGORY_ICONS[category] || "🍽️"}</span>
+                  <h4 className="text-xs font-black text-stone-800 uppercase tracking-wide">
+                    {category}
+                  </h4>
                 </div>
+                <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-bold text-stone-600">
+                  {items.length} {items.length === 1 ? "ዓይነት" : "ዓይነቶች"}
+                </span>
               </div>
-              <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto">
-                <Link
-                  href={`/dashboard/products/${product.id}`}
-                  className="rounded-lg border border-stone-200 bg-stone-50 px-2 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
-                >
-                  History
-                </Link>
-                <Link
-                  href={`/dashboard/products/${product.id}/edit`}
-                  className="rounded-lg border border-stone-200 bg-stone-50 px-2 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
-                >
-                  Edit
-                </Link>
-                <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-amber-50 border border-amber-200 px-2 py-1.5 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 touch-manipulation"
-                  >
-                    Deactivate
-                  </button>
-                </form>
-                <form
-                  action={deleteProduct.bind(null, product.id)}
-                  method="POST"
-                  onSubmit={(e) => {
-                    if (!confirm(`Are you sure you want to delete "${product.name}"?`)) {
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-red-50 border border-red-200 px-2 py-1.5 text-[11px] font-bold text-red-700 transition hover:bg-red-100 touch-manipulation"
-                    title="Delete product permanently"
-                  >
-                    Delete
-                  </button>
-                </form>
+
+              <div className="space-y-2.5">
+                {items.map((product) => (
+                  <div key={product.id} className="rounded-2xl border border-stone-200 bg-white p-3 sm:p-4 shadow-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="min-w-0">
+                        <div className="text-sm font-black text-stone-900">{product.name}</div>
+                        <div className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] font-semibold text-stone-500">
+                          <span>cost {money.format(product.cost_price)}</span>
+                          <span>·</span>
+                          <span>sell {money.format(product.selling_price)}</span>
+                          <span>·</span>
+                          <span className="font-bold text-green-700">+{money.format(product.selling_price - product.cost_price)}</span>
+                          {product.category && (
+                            <>
+                              <span>·</span>
+                              <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded">
+                                {product.category}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto">
+                        <Link
+                          href={`/dashboard/products/${product.id}`}
+                          className="rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
+                        >
+                          History
+                        </Link>
+                        <Link
+                          href={`/dashboard/products/${product.id}/edit`}
+                          className="rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
+                        >
+                          Edit
+                        </Link>
+                        <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
+                          <button
+                            type="submit"
+                            className="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 touch-manipulation"
+                          >
+                            Deactivate
+                          </button>
+                        </form>
+                        <form
+                          action={deleteProduct.bind(null, product.id)}
+                          method="POST"
+                          onSubmit={(e) => {
+                            if (!confirm(`Are you sure you want to delete "${product.name}"?`)) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <button
+                            type="submit"
+                            className="rounded-lg bg-red-50 border border-red-200 px-2.5 py-1.5 text-[11px] font-bold text-red-700 transition hover:bg-red-100 touch-manipulation"
+                            title="Delete product permanently"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
+            </section>
+          ))}
+        </div>
+      )}
 
       {inactiveProducts.length > 0 && (
         <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
@@ -776,7 +903,9 @@ function MenuTab({
               <div key={product.id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-3">
                 <div>
                   <div className="text-sm font-black text-stone-900">{product.name}</div>
-                  <div className="text-[11px] font-semibold text-stone-500">inactive</div>
+                  <div className="text-[11px] font-semibold text-stone-500">
+                    inactive {product.category ? `· ${product.category}` : ""}
+                  </div>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <form action={toggleProductStatus.bind(null, product.id, true)} method="POST">
@@ -815,6 +944,7 @@ function MenuTab({
 
 /* ============================================================
    HISTORY TAB - Scalable Dynamic Filtering & Server Aggregation
+   with Ethiopian Calendar Monthly Profits & High-Contrast Dates
 ============================================================ */
 
 function HistoryTab({
@@ -823,12 +953,15 @@ function HistoryTab({
   historyFilter,
   historyMeals,
   historyProfit,
+  historyRevenue,
   historyLoading,
   customStart,
   customEnd,
+  selectedEthMonth,
   setHistoryFilter,
   setCustomStart,
   setCustomEnd,
+  setSelectedEthMonth,
   money,
 }: {
   allProfit: number;
@@ -836,106 +969,285 @@ function HistoryTab({
   historyFilter: string;
   historyMeals: number;
   historyProfit: number;
+  historyRevenue: number;
   historyLoading: boolean;
   customStart: string;
   customEnd: string;
+  selectedEthMonth: string;
   setHistoryFilter: (f: string) => void;
   setCustomStart: (s: string) => void;
   setCustomEnd: (s: string) => void;
+  setSelectedEthMonth: (m: string) => void;
   money: Intl.NumberFormat;
 }) {
   const exportUrl = `/api/sales/export?filter=${encodeURIComponent(historyFilter)}${customStart ? `&start=${encodeURIComponent(customStart)}` : ""}${customEnd ? `&end=${encodeURIComponent(customEnd)}` : ""}`;
 
+  const ethMonths = useMemo(() => getRecentEthiopianMonths(12), []);
+
+  function handleSelectEthMonth(monthObj: { label: string; startISO: string; endISO: string }) {
+    setSelectedEthMonth(monthObj.label);
+    setCustomStart(monthObj.startISO);
+    setCustomEnd(monthObj.endISO);
+    setHistoryFilter("month");
+  }
+
+  function handleQuickFilter(val: string) {
+    setSelectedEthMonth("");
+    setCustomStart("");
+    setCustomEnd("");
+    setHistoryFilter(val);
+  }
+
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-        <div className="flex items-center justify-between">
+      {/* Overview & Filter Bar */}
+      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-black text-stone-900">All-time profit</div>
-            <div className="mt-1 text-[28px] font-black text-green-700">{money.format(allProfit)}</div>
+            <div className="text-xs font-black uppercase tracking-wider text-stone-500">All-Time Net Profit</div>
+            <div className="mt-1 text-[28px] font-black tracking-tight text-green-700">{money.format(allProfit)}</div>
           </div>
-          <a href={exportUrl} className="rounded-xl border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 hover:bg-white">Export as CSV</a>
+          <a
+            href={exportUrl}
+            className="rounded-xl border border-stone-300 bg-white px-3.5 py-2 text-xs font-bold text-stone-700 shadow-xs transition hover:bg-stone-50 touch-manipulation active:scale-95"
+          >
+            📥 Export CSV
+          </a>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        {/* Standard Quick Filters */}
+        <div className="mt-4 flex flex-wrap gap-1.5">
           {[
-            ["today", "Today"],
-            ["yesterday", "Yesterday"],
-            ["7d", "Last 7 days"],
-            ["all", "All time"],
+            ["today", "ዛሬ (Today)"],
+            ["yesterday", "ትናንት (Yesterday)"],
+            ["7d", "ባለፉት 7 ቀናት (Last 7d)"],
+            ["all", "ሁሉንም (All time)"],
           ].map(([value, label]) => (
             <button
               key={value}
-              onClick={() => setHistoryFilter(value)}
-              className={`rounded-full px-3 py-1 text-[11px] font-black transition ${historyFilter === value
-                ? "bg-stone-900 text-white"
-                : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-50"
-                }`}
+              type="button"
+              onClick={() => handleQuickFilter(value)}
+              className={`rounded-full px-3 py-1.5 text-xs font-black transition active:scale-95 ${
+                historyFilter === value && !selectedEthMonth && !customStart
+                  ? "bg-stone-900 text-white shadow-xs"
+                  : "border border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+              }`}
             >
               {label}
             </button>
           ))}
         </div>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold text-stone-500">Custom date</span>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="sr-only" htmlFor="start-date">Start date</label>
-            <input
-              id="start-date"
-              type="date"
-              value={customStart}
-              onChange={(e) => {
-                setCustomStart(e.target.value);
-                if (e.target.value || customEnd) setHistoryFilter("custom");
-              }}
-              aria-label="Start date"
-              className="rounded-xl border border-stone-300 px-2 py-2 text-xs"
-            />
-            <label className="sr-only" htmlFor="end-date">End date</label>
-            <input
-              id="end-date"
-              type="date"
-              value={customEnd}
-              onChange={(e) => {
-                setCustomEnd(e.target.value);
-                if (customStart || e.target.value) setHistoryFilter("custom");
-              }}
-              aria-label="End date"
-              className="rounded-xl border border-stone-300 px-2 py-2 text-xs"
-            />
+        {/* Ethiopian Calendar Monthly Profits Selector */}
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/80 p-3 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-1">
+            <span className="text-xs font-black text-amber-950 flex items-center gap-1.5">
+              <span>🇪🇹</span>
+              <span>ወርሃዊ ትርፍ በኢትዮጵያ ካላንደር (Monthly Profits)</span>
+            </span>
+            {selectedEthMonth && (
+              <span className="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-black text-amber-900">
+                {selectedEthMonth}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            {ethMonths[0] && (
+              <button
+                type="button"
+                onClick={() => handleSelectEthMonth(ethMonths[0])}
+                className={`rounded-xl px-3 py-1.5 text-xs font-black transition active:scale-95 ${
+                  historyFilter === "month" && selectedEthMonth === ethMonths[0].label
+                    ? "bg-amber-900 text-white shadow-xs"
+                    : "border border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                }`}
+              >
+                ይህ ወር ({ethMonths[0].monthName})
+              </button>
+            )}
+
+            {ethMonths[1] && (
+              <button
+                type="button"
+                onClick={() => handleSelectEthMonth(ethMonths[1])}
+                className={`rounded-xl px-3 py-1.5 text-xs font-black transition active:scale-95 ${
+                  historyFilter === "month" && selectedEthMonth === ethMonths[1].label
+                    ? "bg-amber-900 text-white shadow-xs"
+                    : "border border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                }`}
+              >
+                ያለፈው ወር ({ethMonths[1].monthName})
+              </button>
+            )}
+
+            <div className="relative min-w-[190px] flex-1">
+              <select
+                value={selectedEthMonth || ""}
+                onChange={(e) => {
+                  const found = ethMonths.find((m) => m.label === e.target.value);
+                  if (found) handleSelectEthMonth(found);
+                }}
+                style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                className="w-full rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold !text-stone-900 shadow-xs outline-none focus:border-amber-800"
+              >
+                <option value="" disabled>የወር ዝርዝር ይምረጡ...</option>
+                {ethMonths.map((m) => (
+                  <option key={m.label} value={m.label}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* High-Contrast Specific Date Picker */}
+        <div className="mt-3 rounded-xl border border-stone-200 bg-white p-3 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-stone-800">
+              📅 የተወሰነ ቀን (Specific Date Range)
+            </span>
+            {(customStart || customEnd) && !selectedEthMonth && (
+              <button
+                type="button"
+                onClick={() => handleQuickFilter("today")}
+                className="text-[11px] font-bold text-red-600 hover:text-red-700"
+              >
+                ✕ አጽዳ
+              </button>
+            )}
+          </div>
+
+          <div className="mt-2 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="start-date" className="block text-[11px] font-bold text-stone-700">
+                ከቀን (Start Date)
+              </label>
+              <input
+                id="start-date"
+                type="date"
+                value={customStart.includes("T") ? customStart.split("T")[0] : customStart}
+                onChange={(e) => {
+                  setSelectedEthMonth("");
+                  setCustomStart(e.target.value);
+                  setHistoryFilter("custom");
+                }}
+                style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-bold !text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="end-date" className="block text-[11px] font-bold text-stone-700">
+                እስከ ቀን (End Date)
+              </label>
+              <input
+                id="end-date"
+                type="date"
+                value={customEnd.includes("T") ? customEnd.split("T")[0] : customEnd}
+                onChange={(e) => {
+                  setSelectedEthMonth("");
+                  setCustomEnd(e.target.value);
+                  setHistoryFilter("custom");
+                }}
+                style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-bold !text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-black text-stone-900">
-            {historyLoading ? "Calculating..." : `${historyMeals} meals sold`}
+      {/* Monthly Performance KPI Summary Card (When Month is Selected) */}
+      {selectedEthMonth ? (
+        <div className="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-amber-200/60 pb-2.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-lg">📊</span>
+              <h4 className="text-sm font-black text-amber-950">
+                {selectedEthMonth} የትርፍ እና ሽያጭ ማጠቃለያ
+              </h4>
+            </div>
+            <span className="rounded-full bg-amber-200 px-2.5 py-0.5 text-[10px] font-black text-amber-900">
+              ኢትዮጵያ ካላንደር
+            </span>
           </div>
-          <div className="text-sm font-black text-green-700">
-            {historyLoading ? "..." : `${money.format(historyProfit)} profit`}
+
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
+              <div className="text-[11px] font-bold text-stone-500">ወርሃዊ ትርፍ (Profit)</div>
+              <div className="mt-1 text-base sm:text-lg font-black text-green-700">
+                {historyLoading ? "..." : money.format(historyProfit)}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
+              <div className="text-[11px] font-bold text-stone-500">ወርሃዊ ገቢ (Revenue)</div>
+              <div className="mt-1 text-base sm:text-lg font-black text-stone-900">
+                {historyLoading ? "..." : money.format(historyRevenue)}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
+              <div className="text-[11px] font-bold text-stone-500">የተሸጡ ምግቦች (Meals)</div>
+              <div className="mt-1 text-base sm:text-lg font-black text-stone-900">
+                {historyLoading ? "..." : `${historyMeals} ሳህን`}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
+              <div className="text-[11px] font-bold text-stone-500">አማካይ የቀን ትርፍ (Avg/Day)</div>
+              <div className="mt-1 text-base sm:text-lg font-black text-amber-900">
+                {historyLoading ? "..." : money.format(Math.round(historyProfit / 30))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-black text-stone-900">
+              {historyLoading ? "በማስላት ላይ..." : `${historyMeals} ምግቦች ተሽጠዋል`}
+            </div>
+            <div className="text-sm font-black text-green-700">
+              {historyLoading ? "..." : `${money.format(historyProfit)} ትርፍ`}
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Sales Rows with Ethiopian Calendar Date */}
       <div className="space-y-2">
         {historyLoading ? (
-          <div className="rounded-2xl border border-stone-200 p-6 text-center text-xs text-stone-500">
-            Loading sales history...
+          <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-xs font-bold text-stone-500 shadow-xs">
+            የሽያጭ ታሪክ በማምጣት ላይ...
           </div>
         ) : historyData.length === 0 ? (
-          <div className="rounded-2xl border border-stone-200 p-4 text-sm text-stone-500">No sales in this history view.</div>
+          <div className="rounded-2xl border border-stone-200 bg-white p-6 text-center text-xs font-bold text-stone-500 shadow-xs">
+            በዚህ ጊዜ የተመዘገበ ሽያጭ የለም።
+          </div>
         ) : (
           historyData.map((sale) => (
-            <div key={sale.id} className="rounded-2xl border border-stone-200 p-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-black text-stone-900">{sale.product_name_snapshot} × {sale.quantity}</div>
-                  <div className="text-[11px] font-semibold text-stone-500">{new Date(sale.sold_at).toLocaleString("en-ET")}</div>
+            <div key={sale.id} className="rounded-2xl border border-stone-200 bg-white p-3 sm:p-3.5 shadow-xs transition hover:border-stone-300">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="text-sm font-black text-stone-900 truncate">
+                    {sale.product_name_snapshot} × {sale.quantity}
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-stone-500">
+                    <span className="font-bold text-amber-900">
+                      📅 {formatEthiopianDate(sale.sold_at, true)}
+                    </span>
+                    <span>·</span>
+                    <span>{new Date(sale.sold_at).toLocaleTimeString("en-ET", { hour: "2-digit", minute: "2-digit" })}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-black text-green-700">+{money.format(Number(sale.profit))}</div>
+                <div className="shrink-0 text-right">
+                  <div className="text-sm font-black text-green-700">
+                    +{money.format(Number(sale.profit))}
+                  </div>
+                  <div className="text-[10px] font-semibold text-stone-400">ትርፍ</div>
                 </div>
               </div>
             </div>

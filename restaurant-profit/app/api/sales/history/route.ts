@@ -43,6 +43,20 @@ export async function GET(request: Request) {
     let startDate: string | null = null;
     let endDate: string | null = null;
 
+    function parseBound(str: string, isEnd: boolean): string | null {
+      if (!str) return null;
+      try {
+        if (str.includes("T")) {
+          const d = new Date(str);
+          return isNaN(d.getTime()) ? null : d.toISOString();
+        }
+        const d = new Date(str + (isEnd ? "T23:59:59.999" : "T00:00:00.000"));
+        return isNaN(d.getTime()) ? null : d.toISOString();
+      } catch {
+        return null;
+      }
+    }
+
     if (filter === "today") {
       startDate = startToday;
       endDate = endToday;
@@ -51,16 +65,16 @@ export async function GET(request: Request) {
       endDate = startToday;
     } else if (filter === "7d") {
       startDate = startSeven;
-    } else if (filter === "custom") {
-      if (start) startDate = new Date(start).toISOString();
-      if (end) endDate = new Date(end + "T23:59:59.999").toISOString();
+    } else if (filter === "custom" || filter === "month" || start || end) {
+      startDate = parseBound(start, false);
+      endDate = parseBound(end, true);
     }
 
     // Try calculating exact stats via PostgreSQL RPC first
     let totalProfit = 0;
     let totalMeals = 0;
+    let totalRevenue = 0;
     let totalSales = 0;
-    let usedRpc = false;
 
     const { data: rpcStats, error: rpcError } = await supabase.rpc("get_sales_aggregates", {
       p_restaurant_id: profile.restaurant_id,
@@ -72,7 +86,6 @@ export async function GET(request: Request) {
       totalProfit = Number(rpcStats.total_profit ?? 0);
       totalMeals = Number(rpcStats.total_meals ?? 0);
       totalSales = Number(rpcStats.total_sales ?? 0);
-      usedRpc = true;
     }
 
     // Build the query for sales rows
@@ -91,28 +104,30 @@ export async function GET(request: Request) {
       }
     }
 
-    // If RPC was not available, run a lightweight sum query over the filtered range
-    if (!usedRpc) {
-      let statsQuery = supabase
-        .from("sales")
-        .select("quantity, profit")
-        .eq("restaurant_id", profile.restaurant_id);
+    // Always fetch summary stats over the filtered range
+    let statsQuery = supabase
+      .from("sales")
+      .select("quantity, selling_price_snapshot, profit")
+      .eq("restaurant_id", profile.restaurant_id);
 
-      if (startDate) statsQuery = statsQuery.gte("sold_at", startDate);
-      if (endDate) {
-        if (filter === "yesterday") {
-          statsQuery = statsQuery.lt("sold_at", endDate);
-        } else {
-          statsQuery = statsQuery.lte("sold_at", endDate);
-        }
+    if (startDate) statsQuery = statsQuery.gte("sold_at", startDate);
+    if (endDate) {
+      if (filter === "yesterday") {
+        statsQuery = statsQuery.lt("sold_at", endDate);
+      } else {
+        statsQuery = statsQuery.lte("sold_at", endDate);
       }
+    }
 
-      const { data: statsRows } = await statsQuery;
-      if (statsRows) {
-        totalSales = statsRows.length;
-        totalMeals = statsRows.reduce((sum, r) => sum + Number(r.quantity ?? 0), 0);
-        totalProfit = statsRows.reduce((sum, r) => sum + Number(r.profit ?? 0), 0);
-      }
+    const { data: statsRows } = await statsQuery;
+    if (statsRows) {
+      totalSales = statsRows.length;
+      totalMeals = statsRows.reduce((sum, r) => sum + Number(r.quantity ?? 0), 0);
+      totalProfit = statsRows.reduce((sum, r) => sum + Number(r.profit ?? 0), 0);
+      totalRevenue = statsRows.reduce(
+        (sum, r) => sum + Number(r.selling_price_snapshot ?? 0) * Number(r.quantity ?? 0),
+        0
+      );
     }
 
     // Paginate results efficiently
@@ -128,6 +143,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       sales: items,
       totalProfit,
+      totalRevenue,
       totalMeals,
       totalSales,
       page,

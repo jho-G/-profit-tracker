@@ -63,6 +63,41 @@ export default async function ProductsPage() {
   const activeProducts = (products ?? []).filter((product) => product.active);
   const inactiveProducts = (products ?? []).filter((product) => !product.active);
 
+  const categoryOrder = [
+    "የጾም ቁርስ",
+    "የጾም ምሳ",
+    "የፍስክ ቁርስ",
+    "የፍስክ ምሳ",
+    "መጠጦች",
+    "ትኩስ ነገሮች",
+  ];
+
+  const categoryIcons: Record<string, string> = {
+    "የጾም ቁርስ": "🥗",
+    "የጾም ምሳ": "🍲",
+    "የፍስክ ቁርስ": "🥩",
+    "የፍስክ ምሳ": "🍖",
+    "መጠጦች": "🥤",
+    "ትኩስ ነገሮች": "☕",
+  };
+
+  const groupedActive = Array.from(
+    activeProducts.reduce((map, product) => {
+      const cat = product.category?.trim() || "Uncategorized";
+      const list = map.get(cat) ?? [];
+      list.push(product);
+      map.set(cat, list);
+      return map;
+    }, new Map<string, typeof activeProducts>())
+  ).sort(([a], [b]) => {
+    const aIdx = categoryOrder.indexOf(a);
+    const bIdx = categoryOrder.indexOf(b);
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+    return a.localeCompare(b);
+  });
+
   return (
     <main className="min-h-screen bg-stone-50 px-5 py-10">
       <div className="mx-auto max-w-5xl">
@@ -116,54 +151,70 @@ export default async function ProductsPage() {
                 No active products yet.
               </div>
             ) : (
-              <div className="space-y-3">
-                {activeProducts.map((product) => (
-                  <div key={product.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-4">
-                    <div className="min-w-[180px]">
-                      <p className="font-semibold text-stone-900">{product.name}</p>
-                      <p className="text-xs text-stone-500">{product.category || "Uncategorized"}</p>
-                    </div>
-                    <div className="text-sm text-stone-600">
-                      <span className="font-medium">Cost:</span> {money.format(product.cost_price)}
-                    </div>
-                    <div className="text-sm text-stone-600">
-                      <span className="font-medium">Selling:</span> {money.format(product.selling_price)}
-                    </div>
-                    <div className="text-sm text-stone-600">
-                      <span className="font-medium">Profit/unit:</span>{" "}
-                      <span className={profit(product) < 0 ? "text-red-700" : "text-green-700"}>
-                        {money.format(profit(product))}
+              <div className="space-y-8">
+                {groupedActive.map(([category, items]) => (
+                  <div key={category} className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{categoryIcons[category] || "🍽️"}</span>
+                        <h3 className="font-bold text-stone-900">{category}</h3>
+                      </div>
+                      <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-semibold text-stone-700">
+                        {items.length} items
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/dashboard/products/${product.id}`}
-                        className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-white"
-                      >
-                        Detail
-                      </Link>
-                      <Link
-                        href={`/dashboard/products/${product.id}/edit`}
-                        className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-white"
-                      >
-                        Edit
-                      </Link>
-                      <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
-                        <button type="submit" className="rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
-                          Deactivate
-                        </button>
-                      </form>
-                      <form
-                        action={deleteProduct.bind(null, product.id, "/dashboard/products")}
-                        method="POST"
-                      >
-                        <button
-                          type="submit"
-                          className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                      </form>
+
+                    <div className="space-y-3">
+                      {items.map((product) => (
+                        <div key={product.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-4">
+                          <div className="min-w-[180px]">
+                            <p className="font-semibold text-stone-900">{product.name}</p>
+                            <p className="text-xs text-stone-500">{product.category || "Uncategorized"}</p>
+                          </div>
+                          <div className="text-sm text-stone-600">
+                            <span className="font-medium">Cost:</span> {money.format(product.cost_price)}
+                          </div>
+                          <div className="text-sm text-stone-600">
+                            <span className="font-medium">Selling:</span> {money.format(product.selling_price)}
+                          </div>
+                          <div className="text-sm text-stone-600">
+                            <span className="font-medium">Profit/unit:</span>{" "}
+                            <span className={profit(product) < 0 ? "text-red-700" : "text-green-700"}>
+                              {money.format(profit(product))}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/dashboard/products/${product.id}`}
+                              className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-white"
+                            >
+                              Detail
+                            </Link>
+                            <Link
+                              href={`/dashboard/products/${product.id}/edit`}
+                              className="rounded-lg border border-stone-300 px-3 py-2 text-xs font-medium text-stone-700 hover:bg-white"
+                            >
+                              Edit
+                            </Link>
+                            <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
+                              <button type="submit" className="rounded-lg bg-amber-600 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-700">
+                                Deactivate
+                              </button>
+                            </form>
+                            <form
+                              action={deleteProduct.bind(null, product.id, "/dashboard/products")}
+                              method="POST"
+                            >
+                              <button
+                                type="submit"
+                                className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                              >
+                                Delete
+                              </button>
+                            </form>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}

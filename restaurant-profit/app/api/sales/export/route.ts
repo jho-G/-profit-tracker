@@ -54,9 +54,15 @@ export async function GET(request: Request) {
     query = query.gte("sold_at", startYesterday).lt("sold_at", startToday);
   } else if (filter === "7d") {
     query = query.gte("sold_at", startSeven);
-  } else if (filter === "custom") {
-    if (start) query = query.gte("sold_at", new Date(start).toISOString());
-    if (end) query = query.lte("sold_at", new Date(end + "T23:59:59").toISOString());
+  } else if (filter === "custom" || filter === "month" || start || end) {
+    if (start) {
+      const s = start.includes("T") ? new Date(start) : new Date(start + "T00:00:00.000");
+      if (!isNaN(s.getTime())) query = query.gte("sold_at", s.toISOString());
+    }
+    if (end) {
+      const e = end.includes("T") ? new Date(end) : new Date(end + "T23:59:59.999");
+      if (!isNaN(e.getTime())) query = query.lte("sold_at", e.toISOString());
+    }
   }
 
   const { data: sales, error } = await query;
