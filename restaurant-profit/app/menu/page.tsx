@@ -65,10 +65,7 @@ export default async function PublicMenuPage({
     return <UnavailableMenu />;
   }
 
-  const heroImage =
-    items.find((item) => item.product_name.includes("ሽሮ") && item.image_url)?.image_url ??
-    items.find((item) => item.image_url)?.image_url ??
-    null;
+  const heroImage = "/images/hero-shiro.jpg";
   const groups = groupMenuItems(items);
   const categories = groups.map((group) => group.label);
 
@@ -91,9 +88,9 @@ export default async function PublicMenuPage({
         {!heroImage && (
           <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_50%_20%,rgba(235,137,69,0.42),transparent_28%),linear-gradient(145deg,#75402c,#2d1811)]" />
         )}
-        <div className="absolute inset-0 -z-10 bg-[#2b1811]/20" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(31,16,11,0.18)_0%,rgba(31,16,11,0.10)_30%,rgba(31,16,11,0.30)_58%,rgba(31,16,11,0.94)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-[45%] bg-gradient-to-t from-[#21120e]/75 via-[#21120e]/25 to-transparent" />
+        <div className="absolute inset-0 -z-10 bg-black/35" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(25,12,8,0.55)_0%,rgba(25,12,8,0.25)_35%,rgba(25,12,8,0.65)_70%,rgba(33,18,14,0.95)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-[45%] bg-gradient-to-t from-[#21120e] via-[#21120e]/60 to-transparent" />
 
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-5 pb-28 pt-24 text-center sm:px-8 sm:pb-32">
           <div className="mb-7">
