@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { updateProduct, deleteProduct } from "../../actions";
+import CategorySelect from "../../CategorySelect";
 
 export default async function EditProductPage({
   params,
@@ -79,12 +80,7 @@ export default async function EditProductPage({
               <input name="name" defaultValue={product.name} required className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-stone-700">
-                Category
-              </label>
-              <input name="category" defaultValue={product.category || ""} className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
-            </div>
+            <CategorySelect defaultValue={product.category || "የጾም ምሳ"} />
 
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">

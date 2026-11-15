@@ -1150,73 +1150,80 @@ function HistoryTab({
         </div>
 
         {/* Ethiopian Calendar Custom Date Range Picker */}
-        <div className="mt-3 rounded-xl border border-stone-200 bg-white p-3 sm:p-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-stone-900 flex items-center gap-1.5">
-              <span>📅</span>
-              <span>የተወሰነ ቀን በኢትዮጵያ ካላንደር (Filter Date Range - E.C.)</span>
+        <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
+            <span className="text-xs sm:text-sm font-black text-stone-900 flex items-center gap-2">
+              <span className="text-base">📅</span>
+              <span>የተወሰነ ቀን በኢትዮጵያ ካላንደር (Date Range - E.C.)</span>
             </span>
             {(customStart || customEnd) && (
               <button
                 type="button"
                 onClick={() => handleQuickFilter("today")}
-                className="text-[11px] font-bold text-red-600 hover:text-red-700 transition"
+                className="rounded-lg bg-red-50 border border-red-200 px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-100 transition active:scale-95"
               >
-                ✕ አጽዳ
+                ✕ አጽዳ (Reset)
               </button>
             )}
           </div>
 
-          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {/* Start Date */}
-            <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-2.5">
-              <span className="block text-[11px] font-bold text-stone-700 mb-1.5">
-                ከቀን (Start Date - E.C.)
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                <div>
-                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ቀን (Day)</label>
+          <div className="mt-3 space-y-3">
+            {/* Start Date Card */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-black text-stone-800">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-stone-900 text-[10px] font-black text-white">
+                  1
+                </span>
+                <span>ከቀን (Start Date - የኢትዮጵያ ቀን)</span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2.5">
+                {/* Day */}
+                <div className="w-full sm:w-24 shrink-0">
+                  <label className="text-[11px] text-stone-600 font-bold block mb-1">ቀን (Day)</label>
                   <select
                     value={ethStartDay}
                     onChange={(e) => setEthStartDay(Number(e.target.value))}
                     style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-xs font-bold text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
                   >
                     {Array.from({ length: startMaxDays }, (_, i) => i + 1).map((d) => (
                       <option key={d} value={d}>
-                        {d}
+                        {d} ቀን
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ወር (Month)</label>
+                {/* Month - Generous Width for Long Ethiopian Month Names */}
+                <div className="w-full sm:flex-1 min-w-0">
+                  <label className="text-[11px] text-stone-600 font-bold block mb-1">ወር (Month)</label>
                   <select
                     value={ethStartMonth}
                     onChange={(e) => setEthStartMonth(Number(e.target.value))}
                     style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-xs font-bold text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 truncate"
                   >
                     {ETHIOPIAN_MONTHS.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {m.name}
+                        {m.id}. {m.name} ({m.en})
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ዓመት (Year)</label>
+                {/* Year */}
+                <div className="w-full sm:w-32 shrink-0">
+                  <label className="text-[11px] text-stone-600 font-bold block mb-1">ዓመት (Year)</label>
                   <select
                     value={ethStartYear}
                     onChange={(e) => setEthStartYear(Number(e.target.value))}
                     style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-xs font-bold text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
                   >
                     {ethYears.map((y) => (
                       <option key={y} value={y}>
-                        {y}
+                        {y} ዓ.ም
                       </option>
                     ))}
                   </select>
@@ -1224,55 +1231,62 @@ function HistoryTab({
               </div>
             </div>
 
-            {/* End Date */}
-            <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-2.5">
-              <span className="block text-[11px] font-bold text-stone-700 mb-1.5">
-                እስከ ቀን (End Date - E.C.)
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                <div>
-                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ቀን (Day)</label>
+            {/* End Date Card */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-black text-stone-800">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-800 text-[10px] font-black text-white">
+                  2
+                </span>
+                <span>እስከ ቀን (End Date - የኢትዮጵያ ቀን)</span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2.5">
+                {/* Day */}
+                <div className="w-full sm:w-24 shrink-0">
+                  <label className="text-[11px] text-stone-600 font-bold block mb-1">ቀን (Day)</label>
                   <select
                     value={ethEndDay}
                     onChange={(e) => setEthEndDay(Number(e.target.value))}
                     style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-xs font-bold text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
                   >
                     {Array.from({ length: endMaxDays }, (_, i) => i + 1).map((d) => (
                       <option key={d} value={d}>
-                        {d}
+                        {d} ቀን
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ወር (Month)</label>
+                {/* Month - Generous Width for Long Ethiopian Month Names */}
+                <div className="w-full sm:flex-1 min-w-0">
+                  <label className="text-[11px] text-stone-600 font-bold block mb-1">ወር (Month)</label>
                   <select
                     value={ethEndMonth}
                     onChange={(e) => setEthEndMonth(Number(e.target.value))}
                     style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-xs font-bold text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 truncate"
                   >
                     {ETHIOPIAN_MONTHS.map((m) => (
                       <option key={m.id} value={m.id}>
-                        {m.name}
+                        {m.id}. {m.name} ({m.en})
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div>
-                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ዓመት (Year)</label>
+                {/* Year */}
+                <div className="w-full sm:w-32 shrink-0">
+                  <label className="text-[11px] text-stone-600 font-bold block mb-1">ዓመት (Year)</label>
                   <select
                     value={ethEndYear}
                     onChange={(e) => setEthEndYear(Number(e.target.value))}
                     style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                    className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-xs font-bold text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
                   >
                     {ethYears.map((y) => (
                       <option key={y} value={y}>
-                        {y}
+                        {y} ዓ.ም
                       </option>
                     ))}
                   </select>
@@ -1281,13 +1295,13 @@ function HistoryTab({
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-end">
+          <div className="mt-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
             <button
               type="button"
               onClick={applyEthiopianDateRange}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-stone-800 touch-manipulation active:scale-95"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-stone-900 px-6 py-3 text-xs font-black text-white shadow-md transition hover:bg-stone-800 touch-manipulation active:scale-95"
             >
-              <span>🔍</span>
+              <span className="text-base">🔍</span>
               <span>በዚህ ቀን አጣራ (Filter Sales)</span>
             </button>
           </div>
