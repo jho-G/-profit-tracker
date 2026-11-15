@@ -480,9 +480,11 @@ function ProductSaleCard({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (quantity <= 0 || loading) return;
+    const qtyToLog = quantity;
     setLoading(true);
     setJustLogged(true);
-    await onLogSale(product, quantity);
+    setQuantity(1);
+    await onLogSale(product, qtyToLog);
     setLoading(false);
     setTimeout(() => setJustLogged(false), 1200);
   };
@@ -503,17 +505,37 @@ function ProductSaleCard({
         <div className="flex items-center gap-2">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <label className="sr-only" htmlFor={`quantity-${product.id}`}>Quantity</label>
-            <input
-              id={`quantity-${product.id}`}
-              name="quantity"
-              type="number"
-              min="1"
-              step="1"
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              required
-              className="w-14 rounded-xl border border-stone-300 bg-white px-2 py-2 text-center text-sm font-semibold text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10"
-            />
+            <div className="flex items-center rounded-xl border border-stone-300 bg-white">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1 || loading}
+                className="px-2.5 py-1.5 text-xs font-black text-stone-500 hover:text-stone-900 disabled:opacity-30"
+                aria-label="Decrease quantity"
+              >
+                −
+              </button>
+              <input
+                id={`quantity-${product.id}`}
+                name="quantity"
+                type="number"
+                min="1"
+                step="1"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                required
+                className="w-9 border-0 bg-transparent py-1.5 text-center text-xs font-bold text-stone-900 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => q + 1)}
+                disabled={loading}
+                className="px-2.5 py-1.5 text-xs font-black text-stone-500 hover:text-stone-900"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
             <button
               type="submit"
               disabled={loading}
