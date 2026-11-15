@@ -801,18 +801,3 @@ export const DEFAULT_MENU_ITEMS: MenuItemData[] = [
     image_url: null,
   },
 ];
-
-export const MENU_ORIGINAL_PHOTOS = [
-  {
-    id: "menu-fasting",
-    title: "የጾም ምግቦች እና መጠጦች (Fasting & Drinks)",
-    description: "የጾም ቁርስ፣ የጾም ምሳ፣ መጠጦች እና ትኩስ ነገሮች",
-    url: "/images/menu-photo-1.jpg",
-  },
-  {
-    id: "menu-meat",
-    title: "የፍስክ ምግቦች (Non-Fasting Dishes)",
-    description: "የፍስክ ቁርስ እና የፍስክ ምሳ",
-    url: "/images/menu-photo-2.jpg",
-  },
-] as const;
