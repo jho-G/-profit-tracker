@@ -65,7 +65,8 @@ export default async function PublicMenuPage({
     return <UnavailableMenu />;
   }
 
-  const heroImage = "/images/hero-shiro.jpg";
+  const heroImage =
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr7Q9kL2MkGXz5q_s_Y5sJ3a_iIy39r5htgFYXqAdpC9enCumSX8xjld8&s=10";
   const groups = groupMenuItems(items);
   const categories = groups.map((group) => group.label);
 
@@ -77,11 +78,11 @@ export default async function PublicMenuPage({
         style={
           heroImage
             ? {
-                backgroundImage: `url(${heroImage})`,
-                backgroundPosition: "center center",
-                backgroundSize: "cover",
-                backgroundRepeat: "no-repeat",
-              }
+              backgroundImage: `url(${heroImage})`,
+              backgroundPosition: "center center",
+              backgroundSize: "cover",
+              backgroundRepeat: "no-repeat",
+            }
             : undefined
         }
       >
@@ -187,11 +188,10 @@ export default async function PublicMenuPage({
                 </div>
 
                 <div
-                  className={`grid gap-5 sm:gap-7 ${
-                    group.isDrinks
-                      ? "sm:grid-cols-2 lg:grid-cols-4"
-                      : "sm:grid-cols-2 lg:grid-cols-3"
-                  }`}
+                  className={`grid gap-5 sm:gap-7 ${group.isDrinks
+                    ? "sm:grid-cols-2 lg:grid-cols-4"
+                    : "sm:grid-cols-2 lg:grid-cols-3"
+                    }`}
                 >
                   {group.items.map((item) => (
                     <MenuCard key={item.product_id} item={item} compact={group.isDrinks} />
@@ -245,9 +245,8 @@ function MenuCard({
 }) {
   return (
     <article
-      className={`group overflow-hidden rounded-[22px] border border-[#ead6c3] bg-[#fffdf9] shadow-[0_14px_38px_rgba(91,51,29,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(91,51,29,0.14)] ${
-        compact ? "rounded-[18px]" : ""
-      }`}
+      className={`group overflow-hidden rounded-[22px] border border-[#ead6c3] bg-[#fffdf9] shadow-[0_14px_38px_rgba(91,51,29,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgba(91,51,29,0.14)] ${compact ? "rounded-[18px]" : ""
+        }`}
     >
       <div className={`relative overflow-hidden bg-[#ead9c7] ${compact ? "aspect-[1.35]" : "aspect-[1.18]"}`}>
         {item.image_url ? (
