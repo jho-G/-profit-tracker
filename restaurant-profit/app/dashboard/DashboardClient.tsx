@@ -658,6 +658,8 @@ function ProductSaleCard({
 
 const ADMIN_CATEGORY_ORDER = [
   "የጾም ቁርስ",
+  "የፆም ቁርስ",
+  "የፆም ምሳ",
   "የጾም ምሳ",
   "የፍስክ ቁርስ",
   "የፍስክ ምሳ",
@@ -667,6 +669,8 @@ const ADMIN_CATEGORY_ORDER = [
 
 const ADMIN_CATEGORY_ICONS: Record<string, string> = {
   "የጾም ቁርስ": "🥗",
+  "የፆም ቁርስ": "🥗",
+  "የፆም ምሳ": "🍲",
   "የጾም ምሳ": "🍲",
   "የፍስክ ቁርስ": "🥩",
   "የፍስክ ምሳ": "🍖",

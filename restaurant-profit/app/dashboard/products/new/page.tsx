@@ -61,7 +61,7 @@ export default async function NewProductPage({ searchParams }: { searchParams?: 
               <input name="name" required className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
             </div>
 
-            <CategorySelect defaultValue="የጾም ምሳ" />
+            <CategorySelect defaultValue="የፆም ምሳ" />
 
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">

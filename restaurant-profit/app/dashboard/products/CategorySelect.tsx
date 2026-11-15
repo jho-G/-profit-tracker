@@ -4,7 +4,7 @@ import { useState } from "react";
 
 export const DEFAULT_PRODUCT_CATEGORIES = [
   "የጾም ቁርስ",
-  "የጾም ምሳ",
+  "የፆም ምሳ",
   "የፍስክ ምሳ",
   "የፍስክ ቁርስ",
   "መጠጦች",
@@ -17,19 +17,23 @@ interface CategorySelectProps {
 }
 
 export default function CategorySelect({
-  defaultValue = "የጾም ምሳ",
+  defaultValue = "የፆም ምሳ",
   name = "category",
 }: CategorySelectProps) {
-  const isDefaultInList = DEFAULT_PRODUCT_CATEGORIES.some((c) => c === defaultValue);
+  // Find match or match with flexible ጾ/ፆ spelling
+  const matchedCategory = DEFAULT_PRODUCT_CATEGORIES.find(
+    (c) => c === defaultValue
+  ) || DEFAULT_PRODUCT_CATEGORIES.find(
+    (c) => c.replace("የፆም", "የጾም") === defaultValue?.replace("የፆም", "የጾም")
+  );
+
   const [selected, setSelected] = useState<string>(
     defaultValue
-      ? isDefaultInList
-        ? defaultValue
-        : "__custom__"
+      ? matchedCategory || "__custom__"
       : DEFAULT_PRODUCT_CATEGORIES[0]
   );
   const [customValue, setCustomValue] = useState<string>(
-    isDefaultInList ? "" : defaultValue || ""
+    matchedCategory ? "" : defaultValue || ""
   );
 
   const finalValue = selected === "__custom__" ? customValue.trim() : selected;

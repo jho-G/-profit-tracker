@@ -65,6 +65,8 @@ export default async function ProductsPage() {
 
   const categoryOrder = [
     "የጾም ቁርስ",
+    "የፆም ቁርስ",
+    "የፆም ምሳ",
     "የጾም ምሳ",
     "የፍስክ ቁርስ",
     "የፍስክ ምሳ",
@@ -74,6 +76,8 @@ export default async function ProductsPage() {
 
   const categoryIcons: Record<string, string> = {
     "የጾም ቁርስ": "🥗",
+    "የፆም ቁርስ": "🥗",
+    "የፆም ምሳ": "🍲",
     "የጾም ምሳ": "🍲",
     "የፍስክ ቁርስ": "🥩",
     "የፍስክ ምሳ": "🍖",

@@ -22,6 +22,8 @@ const money = new Intl.NumberFormat("en-ET", {
 
 const CATEGORY_ICONS: Record<string, string> = {
   "የጾም ቁርስ": "🥗",
+  "የፆም ቁርስ": "🥗",
+  "የፆም ምሳ": "🍲",
   "የጾም ምሳ": "🍲",
   "የፍስክ ቁርስ": "🥩",
   "የፍስክ ምሳ": "🍖",
@@ -82,6 +84,8 @@ export default function MenuExplorer({ initialItems, categories }: MenuExplorerP
 
     const order = [
       "የጾም ቁርስ",
+      "የፆም ቁርስ",
+      "የፆም ምሳ",
       "የጾም ምሳ",
       "የፍስክ ቁርስ",
       "የፍስክ ምሳ",

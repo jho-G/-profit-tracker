@@ -40,6 +40,8 @@ export default async function PublicMenuPage({
 
   const categoryOrder = [
     "የጾም ቁርስ",
+    "የፆም ቁርስ",
+    "የፆም ምሳ",
     "የጾም ምሳ",
     "የፍስክ ቁርስ",
     "የፍስክ ምሳ",
@@ -173,7 +175,7 @@ export default async function PublicMenuPage({
                     የጾም ምግቦች እና መጠጦች
                   </p>
                   <p className="mt-1 text-xs text-white/90 drop-shadow">
-                    የጾም ቁርስ፣ የጾም ምሳ፣ መጠጦች እና ትኩስ ነገሮች
+                    የጾም ቁርስ፣ የፆም ምሳ፣ መጠጦች እና ትኩስ ነገሮች
                   </p>
                 </div>
               </div>
