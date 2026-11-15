@@ -74,8 +74,14 @@ export default function DashboardClient({
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
 
+  const [todayProfit, setTodayProfit] = useState(initialTodayProfit);
+  const [todayRevenue, setTodayRevenue] = useState(initialTodayRevenue);
+  const [allProfit, setAllProfit] = useState(initialAllProfit);
+  const [todaySalesState, setTodaySalesState] = useState<Sale[]>(todaySales);
+  const [recentSalesState, setRecentSalesState] = useState<Sale[]>(recentSales);
+
   // Dynamic history state (scalable: fetched on-demand per filter)
-  const initialTodayMeals = todaySales.reduce((sum, s) => sum + Number(s.quantity ?? 0), 0);
+  const initialTodayMeals = todaySalesState.reduce((sum, s) => sum + Number(s.quantity ?? 0), 0);
   const [queriedHistory, setQueriedHistory] = useState<{
     sales: Sale[];
     profit: number;
@@ -87,12 +93,12 @@ export default function DashboardClient({
   const inactiveProducts = products.filter((p) => !p.active);
 
   const isInitialToday = historyFilter === "today" && !customStart && !customEnd;
-  const historySales = isInitialToday ? todaySales : (queriedHistory?.sales ?? []);
-  const historyProfit = isInitialToday ? initialTodayProfit : (queriedHistory?.profit ?? 0);
+  const historySales = isInitialToday ? todaySalesState : (queriedHistory?.sales ?? []);
+  const historyProfit = isInitialToday ? todayProfit : (queriedHistory?.profit ?? 0);
   const historyMeals = isInitialToday ? initialTodayMeals : (queriedHistory?.meals ?? 0);
 
   const productGroups = new Map<string, { quantity: number; profit: number }>();
-  for (const sale of todaySales) {
+  for (const sale of todaySalesState) {
     const key = String(sale.product_name_snapshot || "Meal");
     const existing = productGroups.get(key) ?? { quantity: 0, profit: 0 };
     existing.quantity += Number(sale.quantity);
@@ -195,11 +201,11 @@ export default function DashboardClient({
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-stone-200 bg-[#fbf7f1] p-3">
               <div className="text-[11px] font-semibold text-stone-500">Today&apos;s profit</div>
-              <div className="mt-1 text-[24px] font-black leading-none text-green-700">{money.format(initialTodayProfit)}</div>
+              <div className="mt-1 text-[24px] font-black leading-none text-green-700">{money.format(todayProfit)}</div>
             </div>
             <div className="rounded-2xl border border-stone-200 bg-[#fbf7f1] p-3">
               <div className="text-[11px] font-semibold text-stone-500">Today&apos;s sales</div>
-              <div className="mt-1 text-[24px] font-black leading-none text-stone-900">{money.format(initialTodayRevenue)}</div>
+              <div className="mt-1 text-[24px] font-black leading-none text-stone-900">{money.format(todayRevenue)}</div>
             </div>
           </div>
         </section>
