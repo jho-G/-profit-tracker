@@ -79,6 +79,7 @@ export default function DashboardClient({
   const [allProfit, setAllProfit] = useState(initialAllProfit);
   const [todaySalesState, setTodaySalesState] = useState<Sale[]>(todaySales);
   const [recentSalesState, setRecentSalesState] = useState<Sale[]>(recentSales);
+  const [toast, setToast] = useState<{ id: number; message: string; type: "success" | "error" } | null>(null);
 
   // Dynamic history state (scalable: fetched on-demand per filter)
   const initialTodayMeals = todaySalesState.reduce((sum, s) => sum + Number(s.quantity ?? 0), 0);
@@ -207,6 +208,11 @@ export default function DashboardClient({
     setAllProfit((prev) => prev + itemProfit);
     setTodaySalesState((prev) => [tempSale, ...prev]);
     setRecentSalesState((prev) => [tempSale, ...prev.slice(0, 9)]);
+    setToast({
+      id: Date.now(),
+      message: `Logged ${quantity} × ${product.name} (+${money.format(itemProfit)} profit)`,
+      type: "success",
+    });
 
     // 2. Background persistence
     try {
@@ -242,9 +248,19 @@ export default function DashboardClient({
       setAllProfit((prev) => prev - itemProfit);
       setTodaySalesState((prev) => prev.filter((s) => s.id !== tempId));
       setRecentSalesState((prev) => prev.filter((s) => s.id !== tempId));
-      alert(err instanceof Error ? err.message : "Failed to record sale. Please try again.");
+      setToast({
+        id: Date.now(),
+        message: err instanceof Error ? err.message : "Failed to record sale. Reverted.",
+        type: "error",
+      });
     }
   };
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f8f4ee] px-3 py-6 sm:px-4 sm:py-8">
@@ -260,6 +276,29 @@ export default function DashboardClient({
             <LogoutButton />
           </div>
         </div>
+
+        {/* Real-time Toast Feedback */}
+        {toast && (
+          <div className="px-5 pt-3">
+            <div
+              role="status"
+              className={`flex items-center justify-between rounded-xl px-4 py-2 text-xs font-bold shadow-xs transition ${
+                toast.type === "success"
+                  ? "bg-emerald-700 text-white"
+                  : "bg-red-700 text-white"
+              }`}
+            >
+              <span>{toast.message}</span>
+              <button
+                type="button"
+                onClick={() => setToast(null)}
+                className="ml-2 rounded-md px-1 text-white/80 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Stats */}
         <section className="px-5 py-4">
