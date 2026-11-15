@@ -246,6 +246,17 @@ export default function MenuExplorer({ initialItems, categories }: MenuExplorerP
                     className="flex flex-col justify-between rounded-[20px] border border-[#ecd9c6] bg-[#fffdf9] p-4 shadow-[0_4px_16px_rgba(91,51,29,0.04)] transition duration-200 active:scale-[0.99] hover:border-[#dfba9a] hover:shadow-[0_8px_24px_rgba(91,51,29,0.08)]"
                   >
                     <div>
+                      {item.image_url && (
+                        <div className="relative mb-3 aspect-[16/10] w-full overflow-hidden rounded-xl bg-[#faefe3]">
+                          <img
+                            src={item.image_url}
+                            alt={item.product_name}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition duration-300 hover:scale-105"
+                          />
+                        </div>
+                      )}
+
                       <div className="flex items-start justify-between gap-3">
                         <h4 className="text-base font-black leading-snug text-[#3c251b] sm:text-lg">
                           {item.product_name}

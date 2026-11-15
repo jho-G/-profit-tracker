@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { updateProduct } from "../../actions";
+import { updateProduct, deleteProduct } from "../../actions";
 
 export default async function EditProductPage({
   params,
@@ -128,6 +128,23 @@ export default async function EditProductPage({
               </Link>
             </div>
           </form>
+
+          <div className="mt-8 border-t border-stone-200 pt-6">
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4">
+              <div>
+                <h4 className="text-sm font-bold text-red-900">Delete Product</h4>
+                <p className="text-xs text-red-700">Permanently delete this food item from the menu and inventory.</p>
+              </div>
+              <form action={deleteProduct.bind(null, product.id, "/dashboard/products")} method="POST">
+                <button
+                  type="submit"
+                  className="rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-red-700 active:scale-95"
+                >
+                  Delete Permanently
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </main>

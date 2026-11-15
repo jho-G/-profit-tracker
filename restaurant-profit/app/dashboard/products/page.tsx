@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { toggleProductStatus, seedMenuProducts } from "./actions";
+import { toggleProductStatus, seedMenuProducts, deleteProduct } from "./actions";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -153,6 +153,17 @@ export default async function ProductsPage() {
                           Deactivate
                         </button>
                       </form>
+                      <form
+                        action={deleteProduct.bind(null, product.id, "/dashboard/products")}
+                        method="POST"
+                      >
+                        <button
+                          type="submit"
+                          className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
+                      </form>
                     </div>
                   </div>
                 ))}
@@ -210,6 +221,17 @@ export default async function ProductsPage() {
                       <form action={toggleProductStatus.bind(null, product.id, true)} method="POST">
                         <button type="submit" className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700">
                           Reactivate
+                        </button>
+                      </form>
+                      <form
+                        action={deleteProduct.bind(null, product.id, "/dashboard/products")}
+                        method="POST"
+                      >
+                        <button
+                          type="submit"
+                          className="rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white hover:bg-red-700"
+                        >
+                          Delete
                         </button>
                       </form>
                     </div>

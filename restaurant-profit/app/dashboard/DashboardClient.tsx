@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { toggleProductStatus } from "./products/actions";
+import { toggleProductStatus, deleteProduct } from "./products/actions";
 import LogoutButton from "./LogoutButton";
 import ChangePasswordModal from "./ChangePasswordModal";
 
@@ -281,11 +281,10 @@ export default function DashboardClient({
           <div className="px-5 pt-3">
             <div
               role="status"
-              className={`flex items-center justify-between rounded-xl px-4 py-2 text-xs font-bold shadow-xs transition ${
-                toast.type === "success"
-                  ? "bg-emerald-700 text-white"
-                  : "bg-red-700 text-white"
-              }`}
+              className={`flex items-center justify-between rounded-xl px-4 py-2 text-xs font-bold shadow-xs transition ${toast.type === "success"
+                ? "bg-emerald-700 text-white"
+                : "bg-red-700 text-white"
+                }`}
             >
               <span>{toast.message}</span>
               <button
@@ -725,25 +724,42 @@ function MenuTab({
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 self-end sm:self-auto">
+              <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto">
                 <Link
                   href={`/dashboard/products/${product.id}`}
-                  className="rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
+                  className="rounded-lg border border-stone-200 bg-stone-50 px-2 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
                 >
                   History
                 </Link>
                 <Link
                   href={`/dashboard/products/${product.id}/edit`}
-                  className="rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
+                  className="rounded-lg border border-stone-200 bg-stone-50 px-2 py-1.5 text-[11px] font-bold text-stone-700 transition hover:bg-stone-100 touch-manipulation"
                 >
                   Edit
                 </Link>
                 <form action={toggleProductStatus.bind(null, product.id, false)} method="POST">
                   <button
                     type="submit"
-                    className="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 touch-manipulation"
+                    className="rounded-lg bg-amber-50 border border-amber-200 px-2 py-1.5 text-[11px] font-bold text-amber-800 transition hover:bg-amber-100 touch-manipulation"
                   >
                     Deactivate
+                  </button>
+                </form>
+                <form
+                  action={deleteProduct.bind(null, product.id)}
+                  method="POST"
+                  onSubmit={(e) => {
+                    if (!confirm(`Are you sure you want to delete "${product.name}"?`)) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-red-50 border border-red-200 px-2 py-1.5 text-[11px] font-bold text-red-700 transition hover:bg-red-100 touch-manipulation"
+                    title="Delete product permanently"
+                  >
+                    Delete
                   </button>
                 </form>
               </div>
@@ -762,14 +778,32 @@ function MenuTab({
                   <div className="text-sm font-black text-stone-900">{product.name}</div>
                   <div className="text-[11px] font-semibold text-stone-500">inactive</div>
                 </div>
-                <form action={toggleProductStatus.bind(null, product.id, true)} method="POST">
-                  <button
-                    type="submit"
-                    className="rounded-xl bg-green-700 px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-green-800 touch-manipulation active:scale-95"
+                <div className="flex items-center gap-1.5">
+                  <form action={toggleProductStatus.bind(null, product.id, true)} method="POST">
+                    <button
+                      type="submit"
+                      className="rounded-xl bg-green-700 px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-green-800 touch-manipulation active:scale-95"
+                    >
+                      Reactivate
+                    </button>
+                  </form>
+                  <form
+                    action={deleteProduct.bind(null, product.id)}
+                    method="POST"
+                    onSubmit={(e) => {
+                      if (!confirm(`Permanently delete "${product.name}"?`)) {
+                        e.preventDefault();
+                      }
+                    }}
                   >
-                    Reactivate
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      className="rounded-xl bg-red-50 border border-red-200 px-2.5 py-1.5 text-[11px] font-black text-red-700 transition hover:bg-red-100 touch-manipulation active:scale-95"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>

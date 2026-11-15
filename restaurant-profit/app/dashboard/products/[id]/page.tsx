@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { deleteProduct } from "../actions";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -113,13 +114,21 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Link href={`/dashboard/products/${product.id}/edit`} className="rounded-xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50">
                 Edit Product
               </Link>
               <Link href="/dashboard?tab=menu" className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800">
                 Back to Menu
               </Link>
+              <form action={deleteProduct.bind(null, product.id, "/dashboard/products")} method="POST">
+                <button
+                  type="submit"
+                  className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition"
+                >
+                  Delete Food
+                </button>
+              </form>
             </div>
           </div>
         </div>

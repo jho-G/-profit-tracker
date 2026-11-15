@@ -183,6 +183,29 @@ export async function toggleProductStatus(productId: string, active: boolean) {
   redirect("/dashboard?tab=menu");
 }
 
+export async function deleteProduct(productId: string, redirectTarget?: string | FormData) {
+  const supabase = await createClient();
+  const owner = await getOwnerRestaurant(supabase);
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", productId)
+    .eq("restaurant_id", owner.restaurant_id);
+
+  const target = typeof redirectTarget === "string" ? redirectTarget : "/dashboard?tab=menu";
+
+  if (error) {
+    const separator = target.includes("?") ? "&" : "?";
+    redirect(`${target}${separator}error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/products");
+  revalidatePath("/menu");
+  redirect(target);
+}
+
 export async function seedMenuProducts() {
   const supabase = await createClient();
   const owner = await getOwnerRestaurant(supabase);

@@ -38,9 +38,6 @@ export default async function PublicMenuPage({
     return <UnavailableMenu />;
   }
 
-  const heroImage =
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQr7Q9kL2MkGXz5q_s_Y5sJ3a_iIy39r5htgFYXqAdpC9enCumSX8xjld8&s=10";
-
   const categoryOrder = [
     "የጾም ቁርስ",
     "የጾም ምሳ",
@@ -68,19 +65,18 @@ export default async function PublicMenuPage({
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f6efe5] text-[#3c251b] selection:bg-[#e56b2f] selection:text-white">
       {/* HERO SECTION (Mobile-First Responsive) */}
-      <section
-        className="relative isolate flex min-h-[460px] w-full items-center justify-center overflow-hidden bg-[#3a2118] sm:min-h-[560px] lg:min-h-[640px]"
-        style={{
-          backgroundImage: `url(${heroImage})`,
-          backgroundPosition: "center center",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        {/* Dark Overlays for Strong Typography Contrast */}
-        <div className="absolute inset-0 -z-10 bg-black/45" />
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(25,12,8,0.65)_0%,rgba(25,12,8,0.30)_35%,rgba(25,12,8,0.70)_70%,rgba(33,18,14,0.98)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 -z-10 h-[45%] bg-gradient-to-t from-[#21120e] via-[#21120e]/60 to-transparent" />
+      <section className="relative isolate flex min-h-[460px] w-full items-center justify-center overflow-hidden bg-[#24130d] sm:min-h-[560px] lg:min-h-[640px]">
+        {/* Shiro Dish Hero Image */}
+        <img
+          src="/images/hero-shiro.jpg"
+          alt="ልዩ ሽሮ"
+          className="absolute inset-0 -z-20 h-full w-full object-cover object-center brightness-95 contrast-105"
+        />
+
+        {/* Balanced Overlays for Warm Contrast */}
+        <div className="absolute inset-0 -z-10 bg-black/35" />
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(25,12,8,0.45)_0%,rgba(25,12,8,0.20)_35%,rgba(25,12,8,0.60)_70%,rgba(33,18,14,0.95)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 -z-10 h-[35%] bg-gradient-to-t from-[#21120e] via-[#21120e]/50 to-transparent" />
 
         <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-4 pb-16 pt-12 text-center sm:px-8 sm:pb-24 sm:pt-20">
           <div className="mb-4 sm:mb-6">
@@ -142,6 +138,73 @@ export default async function PublicMenuPage({
 
         {/* Client-Side Interactive Explorer */}
         <MenuExplorer initialItems={items} categories={uniqueCategories} />
+
+        {/* ORIGINAL MENU PHOTOS (User's Official Menu Sheets) */}
+        <div className="mt-16 sm:mt-24">
+          <div className="mx-auto mb-6 max-w-xl text-center">
+            <span className="rounded-full bg-[#f0ddcb] px-3.5 py-1 text-[11px] font-black tracking-wider text-[#b64e20] uppercase">
+              ኦሪጅናል ማውጫ
+            </span>
+            <h3 className="mt-2 text-2xl font-black text-[#3c251b] sm:text-3xl">
+              የታተሙ የምግብ ማውጫ ፎቶዎች
+            </h3>
+            <p className="mt-1.5 text-xs text-[#785f50]">
+              በትልቁ ለማየት ፎቶውን ይጫኑ
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+            <a
+              href="/images/menu-photo-1.jpg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative overflow-hidden rounded-[24px] border border-[#e5cfb9] bg-[#fffaf4] shadow-[0_12px_36px_rgba(91,51,29,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(91,51,29,0.16)]"
+            >
+              <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#e0cdbc]">
+                <img
+                  src="/images/menu-photo-1.jpg"
+                  alt="የጾም ምግቦች እና መጠጦች"
+                  loading="lazy"
+                  className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-85 group-hover:opacity-70 transition" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <p className="text-base font-black drop-shadow-md">
+                    የጾም ምግቦች እና መጠጦች
+                  </p>
+                  <p className="mt-1 text-xs text-white/90 drop-shadow">
+                    የጾም ቁርስ፣ የጾም ምሳ፣ መጠጦች እና ትኩስ ነገሮች
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <a
+              href="/images/menu-photo-2.jpg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative overflow-hidden rounded-[24px] border border-[#e5cfb9] bg-[#fffaf4] shadow-[0_12px_36px_rgba(91,51,29,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_rgba(91,51,29,0.16)]"
+            >
+              <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#e0cdbc]">
+                <img
+                  src="/images/menu-photo-2.jpg"
+                  alt="የፍስክ ምግቦች"
+                  loading="lazy"
+                  className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent opacity-85 group-hover:opacity-70 transition" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <p className="text-base font-black drop-shadow-md">
+                    የፍስክ ምግቦች
+                  </p>
+                  <p className="mt-1 text-xs text-white/90 drop-shadow">
+                    የፍስክ ቁርስ እና የፍስክ ምሳ
+                  </p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
       </section>
 
       {/* FOOTER & ADDRESS INFO */}
