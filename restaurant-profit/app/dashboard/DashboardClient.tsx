@@ -310,7 +310,7 @@ export default function DashboardClient({
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f8f4ee] px-3 py-6 sm:px-4 sm:py-8">
-      <div className="mx-auto w-full max-w-[480px] rounded-[2rem] border border-stone-200 bg-white shadow-sm">
+      <div className="mx-auto w-full max-w-md sm:max-w-xl md:max-w-3xl lg:max-w-4xl rounded-[2rem] border border-stone-200 bg-white shadow-sm transition-all duration-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
           <div className="min-w-0">
@@ -537,7 +537,7 @@ function SellTab({
           No matching products found.
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
           {filteredProducts.map((product) => (
             <ProductSaleCard
               key={product.id}
