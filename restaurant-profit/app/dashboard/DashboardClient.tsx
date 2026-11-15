@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createSale } from "./sales/actions";
 import { toggleProductStatus } from "./products/actions";
 import LogoutButton from "./LogoutButton";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -44,15 +45,22 @@ type Tab = "sell" | "menu" | "history" | "qr";
 interface DashboardClientProps {
   restaurant: Restaurant | null;
   products: Product[];
-  sales: Sale[];
+  todaySales: Sale[];
+  recentSales: Sale[];
   restaurantId: string;
+  initialAllProfit: number;
+  initialTodayProfit: number;
+  initialTodayRevenue: number;
 }
 
 export default function DashboardClient({
-  restaurant,
   products,
-  sales,
+  todaySales,
+  recentSales,
   restaurantId,
+  initialAllProfit,
+  initialTodayProfit,
+  initialTodayRevenue,
 }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>("sell");
   const [historyFilter, setHistoryFilter] = useState<string>("today");
@@ -61,21 +69,22 @@ export default function DashboardClient({
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
 
+  // Dynamic history state (scalable: fetched on-demand per filter)
+  const initialTodayMeals = todaySales.reduce((sum, s) => sum + Number(s.quantity ?? 0), 0);
+  const [queriedHistory, setQueriedHistory] = useState<{
+    sales: Sale[];
+    profit: number;
+    meals: number;
+  } | null>(null);
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+
   const activeProducts = products.filter((p) => p.active);
   const inactiveProducts = products.filter((p) => !p.active);
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
-  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
-  const todaySales = sales.filter((sale) => sale.sold_at >= todayStart && sale.sold_at <= todayEnd);
-
-  const todayProfit = todaySales.reduce((sum, sale) => sum + Number(sale.profit ?? 0), 0);
-  const todayRevenue = todaySales.reduce(
-    (sum, sale) => sum + Number(sale.selling_price_snapshot ?? 0) * Number(sale.quantity ?? 0),
-    0
-  );
-
-  const allProfit = sales.reduce((sum, sale) => sum + Number(sale.profit ?? 0), 0);
+  const isInitialToday = historyFilter === "today" && !customStart && !customEnd;
+  const historySales = isInitialToday ? todaySales : (queriedHistory?.sales ?? []);
+  const historyProfit = isInitialToday ? initialTodayProfit : (queriedHistory?.profit ?? 0);
+  const historyMeals = isInitialToday ? initialTodayMeals : (queriedHistory?.meals ?? 0);
 
   const productGroups = new Map<string, { quantity: number; profit: number }>();
   for (const sale of todaySales) {
@@ -86,30 +95,80 @@ export default function DashboardClient({
     productGroups.set(key, existing);
   }
 
-  const historyData = historyRecordsForFilter(sales, historyFilter, customStart, customEnd);
-  const historyProfit = historyData.reduce((sum, sale) => sum + Number(sale.profit ?? 0), 0);
-  const historyMeals = historyData.reduce((sum, sale) => sum + Number(sale.quantity ?? 0), 0);
-
-  const generateQr = useCallback(async () => {
-    if (qrDataUrl || qrLoading) return;
-    setQrLoading(true);
-    try {
-      const QRCode = await import("qrcode");
-      const url = `${window.location.origin}/menu/${restaurantId}`;
-      const dataUrl = await QRCode.toDataURL(url);
-      setQrDataUrl(dataUrl);
-    } catch {
-      console.error("Failed to generate QR code");
-    } finally {
-      setQrLoading(false);
-    }
-  }, [qrDataUrl, qrLoading, restaurantId]);
-
+  // Fetch history data dynamically when filter is not default today
   useEffect(() => {
-    if (activeTab === "qr") {
-      generateQr();
+    if (historyFilter === "today" && !customStart && !customEnd) {
+      return;
     }
-  }, [activeTab, generateQr]);
+
+    let isCancelled = false;
+    const controller = new AbortController();
+
+    async function loadHistory() {
+      setHistoryLoading(true);
+      try {
+        const params = new URLSearchParams({ filter: historyFilter });
+        if (customStart) params.set("start", customStart);
+        if (customEnd) params.set("end", customEnd);
+        const res = await fetch(`/api/sales/history?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (!isCancelled) {
+            setQueriedHistory({
+              sales: data.sales ?? [],
+              profit: Number(data.totalProfit ?? 0),
+              meals: Number(data.totalMeals ?? 0),
+            });
+          }
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") return;
+        console.error("Failed to fetch sales history:", err);
+      } finally {
+        if (!isCancelled) setHistoryLoading(false);
+      }
+    }
+
+    loadHistory();
+
+    return () => {
+      isCancelled = true;
+      controller.abort();
+    };
+  }, [historyFilter, customStart, customEnd]);
+
+  // Generate QR code for the single restaurant public menu (/menu)
+  useEffect(() => {
+    if (activeTab !== "qr" || qrDataUrl) return;
+
+    let isCancelled = false;
+
+    async function generate() {
+      setQrLoading(true);
+      try {
+        const QRCode = await import("qrcode");
+        const url = `${window.location.origin}/menu`;
+        const dataUrl = await QRCode.toDataURL(url);
+        if (!isCancelled) {
+          setQrDataUrl(dataUrl);
+        }
+      } catch {
+        console.error("Failed to generate QR code");
+      } finally {
+        if (!isCancelled) {
+          setQrLoading(false);
+        }
+      }
+    }
+
+    generate();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeTab, qrDataUrl]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f8f4ee] px-3 py-6 sm:px-4 sm:py-8">
@@ -118,9 +177,10 @@ export default function DashboardClient({
         <div className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
           <div className="min-w-0">
             <div className="text-[22px] font-black leading-tight tracking-tight text-stone-900">ልዩ ሽሮ Profit Tracker</div>
-            <div className="text-[11px] font-medium text-stone-500">Profit tracker</div>
+            <div className="text-[11px] font-medium text-stone-500">Restaurant management</div>
           </div>
           <div className="flex items-center gap-2">
+            <ChangePasswordModal />
             <LogoutButton />
           </div>
         </div>
@@ -130,11 +190,11 @@ export default function DashboardClient({
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-stone-200 bg-[#fbf7f1] p-3">
               <div className="text-[11px] font-semibold text-stone-500">Today&apos;s profit</div>
-              <div className="mt-1 text-[24px] font-black leading-none text-green-700">{money.format(todayProfit)}</div>
+              <div className="mt-1 text-[24px] font-black leading-none text-green-700">{money.format(initialTodayProfit)}</div>
             </div>
             <div className="rounded-2xl border border-stone-200 bg-[#fbf7f1] p-3">
               <div className="text-[11px] font-semibold text-stone-500">Today&apos;s sales</div>
-              <div className="mt-1 text-[24px] font-black leading-none text-stone-900">{money.format(todayRevenue)}</div>
+              <div className="mt-1 text-[24px] font-black leading-none text-stone-900">{money.format(initialTodayRevenue)}</div>
             </div>
           </div>
         </section>
@@ -158,13 +218,13 @@ export default function DashboardClient({
           </div>
         </section>
 
-        {/* Tab Content - no page reload */}
+        {/* Tab Content */}
         <section className="px-5 py-4">
           {activeTab === "sell" && (
             <SellTab
               activeProducts={activeProducts}
               productGroups={productGroups}
-              sales={sales}
+              recentSales={recentSales}
               money={money}
             />
           )}
@@ -179,11 +239,12 @@ export default function DashboardClient({
 
           {activeTab === "history" && (
             <HistoryTab
-              allProfit={allProfit}
-              historyData={historyData}
+              allProfit={initialAllProfit}
+              historyData={historySales}
               historyFilter={historyFilter}
               historyMeals={historyMeals}
               historyProfit={historyProfit}
+              historyLoading={historyLoading}
               customStart={customStart}
               customEnd={customEnd}
               setHistoryFilter={setHistoryFilter}
@@ -213,12 +274,12 @@ export default function DashboardClient({
 function SellTab({
   activeProducts,
   productGroups,
-  sales,
+  recentSales,
   money,
 }: {
   activeProducts: Product[];
   productGroups: Map<string, { quantity: number; profit: number }>;
-  sales: Sale[];
+  recentSales: Sale[];
   money: Intl.NumberFormat;
 }) {
   return (
@@ -277,11 +338,11 @@ function SellTab({
           <Link href="/dashboard/sales" className="text-[11px] font-bold text-stone-600 hover:text-stone-900">View all</Link>
         </div>
 
-        {sales.length === 0 ? (
+        {recentSales.length === 0 ? (
           <div className="text-xs text-stone-500">No sales yet.</div>
         ) : (
           <div className="space-y-2">
-            {sales.slice(0, 5).map((sale) => (
+            {recentSales.slice(0, 5).map((sale) => (
               <div key={sale.id} className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2">
                 <div className="min-w-0">
                   <div className="truncate text-xs font-black text-stone-900">{sale.product_name_snapshot} × {sale.quantity}</div>
@@ -365,7 +426,7 @@ function MenuTab({
 }
 
 /* ============================================================
-   HISTORY TAB
+   HISTORY TAB - Scalable Dynamic Filtering & Server Aggregation
 ============================================================ */
 
 function HistoryTab({
@@ -374,6 +435,7 @@ function HistoryTab({
   historyFilter,
   historyMeals,
   historyProfit,
+  historyLoading,
   customStart,
   customEnd,
   setHistoryFilter,
@@ -386,6 +448,7 @@ function HistoryTab({
   historyFilter: string;
   historyMeals: number;
   historyProfit: number;
+  historyLoading: boolean;
   customStart: string;
   customEnd: string;
   setHistoryFilter: (f: string) => void;
@@ -403,7 +466,7 @@ function HistoryTab({
             <div className="text-sm font-black text-stone-900">All-time profit</div>
             <div className="mt-1 text-[28px] font-black text-green-700">{money.format(allProfit)}</div>
           </div>
-          <a href={exportUrl} className="rounded-xl border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 hover:bg-white">Export this view as CSV</a>
+          <a href={exportUrl} className="rounded-xl border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 hover:bg-white">Export as CSV</a>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -460,13 +523,21 @@ function HistoryTab({
 
       <div className="rounded-2xl border border-stone-200 bg-white p-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-black text-stone-900">{historyMeals} meals sold</div>
-          <div className="text-sm font-black text-green-700">{money.format(historyProfit)} profit</div>
+          <div className="text-sm font-black text-stone-900">
+            {historyLoading ? "Calculating..." : `${historyMeals} meals sold`}
+          </div>
+          <div className="text-sm font-black text-green-700">
+            {historyLoading ? "..." : `${money.format(historyProfit)} profit`}
+          </div>
         </div>
       </div>
 
       <div className="space-y-2">
-        {historyData.length === 0 ? (
+        {historyLoading ? (
+          <div className="rounded-2xl border border-stone-200 p-6 text-center text-xs text-stone-500">
+            Loading sales history...
+          </div>
+        ) : historyData.length === 0 ? (
           <div className="rounded-2xl border border-stone-200 p-4 text-sm text-stone-500">No sales in this history view.</div>
         ) : (
           historyData.map((sale) => (
@@ -489,20 +560,19 @@ function HistoryTab({
 }
 
 /* ============================================================
-   QR TAB - generates QR on demand
+   QR TAB - Single Restaurant Public Menu URL
 ============================================================ */
 
 function QRTab({
   qrDataUrl,
   qrLoading,
-  restaurantId,
 }: {
   qrDataUrl: string | null;
   qrLoading: boolean;
   restaurantId: string;
 }) {
   const publicMenuUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/menu/${restaurantId}`
+    ? `${window.location.origin}/menu`
     : "";
 
   return (
@@ -528,7 +598,7 @@ function QRTab({
             </div>
             <div className="flex gap-2">
               {qrDataUrl && (
-                <a href={qrDataUrl} download="restaurant-public-menu-qr.png" className="rounded-xl bg-stone-900 px-4 py-2 text-[11px] font-black text-white transition hover:bg-stone-800">Download QR</a>
+                <a href={qrDataUrl} download="liyu-shiro-menu-qr.png" className="rounded-xl bg-stone-900 px-4 py-2 text-[11px] font-black text-white transition hover:bg-stone-800">Download QR</a>
               )}
             </div>
           </div>
@@ -536,35 +606,4 @@ function QRTab({
       </div>
     </div>
   );
-}
-
-/* ============================================================
-   HELPERS
-============================================================ */
-
-function historyRecordsForFilter(sales: Sale[], filter: string, start?: string, end?: string) {
-  if (!sales) return [];
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0).toISOString();
-  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString();
-  const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0).toISOString();
-  const sevenStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6, 0, 0, 0, 0).toISOString();
-
-  let result = [...sales];
-  if (filter === "today") result = result.filter((sale) => sale.sold_at >= todayStart && sale.sold_at <= todayEnd);
-  else if (filter === "yesterday") result = result.filter((sale) => sale.sold_at >= yesterdayStart && sale.sold_at < todayStart);
-  else if (filter === "7d") result = result.filter((sale) => sale.sold_at >= sevenStart);
-  else if (filter === "custom") {
-    const startDate = start ? new Date(start).toISOString() : null;
-    const endDate = end ? new Date(end + "T23:59:59").toISOString() : null;
-    result = result.filter((sale) => {
-      if (startDate && sale.sold_at < startDate) return false;
-      if (endDate && sale.sold_at > endDate) return false;
-      return true;
-    });
-  } else if (filter === "all") {
-    result = result;
-  }
-
-  return result;
 }

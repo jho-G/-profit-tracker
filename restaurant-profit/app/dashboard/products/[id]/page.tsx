@@ -43,7 +43,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     redirect("/dashboard/products");
   }
 
-  const { data: priceHistory, error: historyError } = await supabase
+  const { data: priceHistory } = await supabase
     .from("product_price_history")
     .select("id, created_at, old_cost_price, old_selling_price, new_cost_price, new_selling_price, changed_by")
     .eq("product_id", id)

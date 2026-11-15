@@ -9,7 +9,11 @@ const money = new Intl.NumberFormat("en-ET", {
   minimumFractionDigits: 2,
 });
 
-export default async function SalesPage({ searchParams }: { searchParams?: Promise<{ error?: string }> }) {
+export default async function SalesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ error?: string; page?: string }>;
+}) {
   const supabase = await createClient();
 
   const {
@@ -34,26 +38,39 @@ export default async function SalesPage({ searchParams }: { searchParams?: Promi
 
   const params = searchParams ? await searchParams : {};
   const error = params.error;
+  const page = Math.max(Number(params.page ?? 1), 1);
+  const pageSize = 50;
+  const offset = (page - 1) * pageSize;
 
   const todays = new Date();
   const dayStart = new Date(todays.getFullYear(), todays.getMonth(), todays.getDate(), 0, 0, 0, 0).toISOString();
   const dayEnd = new Date(todays.getFullYear(), todays.getMonth(), todays.getDate(), 23, 59, 59, 999).toISOString();
 
-  const { data: sales, error: salesError } = await supabase
-    .from("sales")
-    .select("id, sold_at, product_name_snapshot, quantity, selling_price_snapshot, cost_price_snapshot, profit, restaurant_id")
-    .eq("restaurant_id", profile.restaurant_id)
-    .order("sold_at", { ascending: false })
-    .limit(80);
+  // 1. Exact query for Today's summary
+  // 2. Paginated query for Sales list
+  const [todaysSalesResult, salesListResult] = await Promise.all([
+    supabase
+      .from("sales")
+      .select("quantity, selling_price_snapshot, profit")
+      .eq("restaurant_id", profile.restaurant_id)
+      .gte("sold_at", dayStart)
+      .lte("sold_at", dayEnd),
+    supabase
+      .from("sales")
+      .select("id, sold_at, product_name_snapshot, quantity, selling_price_snapshot, cost_price_snapshot, profit, restaurant_id", { count: "exact" })
+      .eq("restaurant_id", profile.restaurant_id)
+      .order("sold_at", { ascending: false })
+      .range(offset, offset + pageSize - 1),
+  ]);
 
-  if (salesError) {
+  if (salesListResult.error) {
     return (
       <main className="min-h-screen bg-stone-50 px-5 py-10">
         <div className="mx-auto max-w-5xl">
           <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-stone-200">
             <h1 className="text-2xl font-bold tracking-tight text-stone-900">Sales</h1>
             <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-              Unable to load sales: {salesError.message}
+              Unable to load sales: {salesListResult.error.message}
             </div>
           </div>
         </div>
@@ -61,17 +78,21 @@ export default async function SalesPage({ searchParams }: { searchParams?: Promi
     );
   }
 
-  const todaysSales = (sales ?? []).filter((sale) => sale.sold_at >= dayStart && sale.sold_at <= dayEnd);
+  const todaysSales = todaysSalesResult.data ?? [];
   const summary = todaysSales.reduce(
     (acc, sale) => {
       acc.sales += 1;
-      acc.quantity += sale.quantity;
-      acc.revenue += sale.selling_price_snapshot * sale.quantity;
-      acc.profit += sale.profit;
+      acc.quantity += Number(sale.quantity ?? 0);
+      acc.revenue += Number(sale.selling_price_snapshot ?? 0) * Number(sale.quantity ?? 0);
+      acc.profit += Number(sale.profit ?? 0);
       return acc;
     },
     { sales: 0, quantity: 0, revenue: 0, profit: 0 }
   );
+
+  const sales = salesListResult.data ?? [];
+  const totalCount = salesListResult.count ?? sales.length;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
     <main className="min-h-screen bg-stone-50 px-5 py-10">
@@ -136,17 +157,17 @@ export default async function SalesPage({ searchParams }: { searchParams?: Promi
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-stone-900">Recent sales</h2>
               <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold text-stone-700">
-                {sales?.length ?? 0} sales
+                {totalCount} total sales
               </span>
             </div>
 
-            {(sales ?? []).length === 0 ? (
+            {sales.length === 0 ? (
               <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-500">
                 No sales yet. Record your first sale.
               </div>
             ) : (
               <div className="space-y-3">
-                {(sales ?? []).map((sale) => (
+                {sales.map((sale) => (
                   <div key={sale.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-4">
                     <div className="min-w-[190px]">
                       <div className="text-xs font-semibold uppercase tracking-wide text-stone-500">{new Date(sale.sold_at).toLocaleString("en-ET")}</div>
@@ -186,6 +207,34 @@ export default async function SalesPage({ searchParams }: { searchParams?: Promi
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between border-t border-stone-200 pt-4">
+                <div>
+                  <span className="text-xs text-stone-500">
+                    Page {page} of {totalPages}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  {page > 1 && (
+                    <Link
+                      href={`/dashboard/sales?page=${page - 1}`}
+                      className="rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                    >
+                      Previous
+                    </Link>
+                  )}
+                  {page < totalPages && (
+                    <Link
+                      href={`/dashboard/sales?page=${page + 1}`}
+                      className="rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                    >
+                      Next
+                    </Link>
+                  )}
+                </div>
               </div>
             )}
           </section>
