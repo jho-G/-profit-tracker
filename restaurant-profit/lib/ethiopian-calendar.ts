@@ -226,3 +226,53 @@ export function getRecentEthiopianMonths(count = 12): Array<{
 
   return list;
 }
+
+export function getEthiopianDaysInMonth(year: number, month: number): number {
+  if (month === 13) {
+    return year % 4 === 3 ? 6 : 5;
+  }
+  return 30;
+}
+
+export function ethiopianRangeToGregorianISO(
+  start: { year: number; month: number; day: number },
+  end: { year: number; month: number; day: number }
+): { startISO: string; endISO: string; label: string } {
+  const startGreg = ethiopianToGregorian(start.year, start.month, start.day);
+  const endGreg = ethiopianToGregorian(end.year, end.month, end.day);
+
+  const startDate = new Date(
+    startGreg.getFullYear(),
+    startGreg.getMonth(),
+    startGreg.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+  const endDate = new Date(
+    endGreg.getFullYear(),
+    endGreg.getMonth(),
+    endGreg.getDate(),
+    23,
+    59,
+    59,
+    999
+  );
+
+  const startMonthName =
+    ETHIOPIAN_MONTHS.find((m) => m.id === start.month)?.name ?? `ወር ${start.month}`;
+  const endMonthName =
+    ETHIOPIAN_MONTHS.find((m) => m.id === end.month)?.name ?? `ወር ${end.month}`;
+
+  const label =
+    start.year === end.year && start.month === end.month
+      ? `${startMonthName} ${start.day} - ${end.day} ቀን ${start.year} ዓ.ም`
+      : `${startMonthName} ${start.day}, ${start.year} - ${endMonthName} ${end.day}, ${end.year} ዓ.ም`;
+
+  return {
+    startISO: startDate.toISOString(),
+    endISO: endDate.toISOString(),
+    label,
+  };
+}

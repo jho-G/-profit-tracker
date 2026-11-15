@@ -29,9 +29,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!newPassword || newPassword.length < 6) {
+    if (!newPassword || newPassword.length < 4) {
       return NextResponse.json(
-        { error: "New password must be at least 6 characters long." },
+        { error: "New password must be at least 4 digits." },
         { status: 400 }
       );
     }
@@ -43,12 +43,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify current password using user email
+    function normalizePwd(p: string): string {
+      return p.length < 6 ? `${p}_liyu_pin` : p;
+    }
+
+    // Verify current password using user email (try both direct and normalized)
     if (user.email) {
-      const { error: verifyError } = await supabase.auth.signInWithPassword({
+      let { error: verifyError } = await supabase.auth.signInWithPassword({
         email: user.email,
         password: currentPassword,
       });
+
+      if (verifyError && currentPassword.length < 6) {
+        const retry = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: normalizePwd(currentPassword),
+        });
+        verifyError = retry.error;
+      }
 
       if (verifyError) {
         return NextResponse.json(
@@ -58,9 +70,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update password for the logged-in admin
+    // Update password for the logged-in admin (normalized to satisfy Supabase min-length)
     const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
+      password: normalizePwd(newPassword),
     });
 
     if (updateError) {

@@ -39,8 +39,8 @@ export default function ChangePasswordModal() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters.");
+    if (newPassword.length < 4) {
+      setError("New password must be at least 4 digits.");
       return;
     }
 
@@ -145,7 +145,7 @@ export default function ChangePasswordModal() {
 
               <div>
                 <label className="block text-xs font-bold text-stone-800">
-                  New Password (min 6 characters)
+                  New Password (min 4 digits / characters)
                 </label>
                 <input
                   type={showPasswords ? "text" : "password"}
@@ -153,8 +153,8 @@ export default function ChangePasswordModal() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   disabled={loading}
                   required
-                  minLength={6}
-                  placeholder="Enter new password"
+                  minLength={4}
+                  placeholder="Enter new 4-digit PIN or password"
                   style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
                   className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-xs font-bold !text-stone-900 placeholder:text-stone-400 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
                 />
@@ -170,8 +170,8 @@ export default function ChangePasswordModal() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={loading}
                   required
-                  minLength={6}
-                  placeholder="Re-enter new password"
+                  minLength={4}
+                  placeholder="Re-enter new 4-digit PIN or password"
                   style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
                   className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-xs font-bold !text-stone-900 placeholder:text-stone-400 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
                 />

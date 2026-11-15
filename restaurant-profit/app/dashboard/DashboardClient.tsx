@@ -5,7 +5,14 @@ import Link from "next/link";
 import { toggleProductStatus, deleteProduct } from "./products/actions";
 import LogoutButton from "./LogoutButton";
 import ChangePasswordModal from "./ChangePasswordModal";
-import { getRecentEthiopianMonths, formatEthiopianDate } from "@/lib/ethiopian-calendar";
+import {
+  getRecentEthiopianMonths,
+  formatEthiopianDate,
+  getCurrentEthiopianDate,
+  ETHIOPIAN_MONTHS,
+  ethiopianRangeToGregorianISO,
+  getEthiopianDaysInMonth,
+} from "@/lib/ethiopian-calendar";
 
 const money = new Intl.NumberFormat("en-ET", {
   style: "currency",
@@ -982,10 +989,50 @@ function HistoryTab({
 }) {
   const exportUrl = `/api/sales/export?filter=${encodeURIComponent(historyFilter)}${customStart ? `&start=${encodeURIComponent(customStart)}` : ""}${customEnd ? `&end=${encodeURIComponent(customEnd)}` : ""}`;
 
+  const currentEth = useMemo(() => getCurrentEthiopianDate(), []);
   const ethMonths = useMemo(() => getRecentEthiopianMonths(12), []);
 
-  function handleSelectEthMonth(monthObj: { label: string; startISO: string; endISO: string }) {
+  const [ethStartDay, setEthStartDay] = useState<number>(1);
+  const [ethStartMonth, setEthStartMonth] = useState<number>(currentEth.month);
+  const [ethStartYear, setEthStartYear] = useState<number>(currentEth.year);
+
+  const [ethEndDay, setEthEndDay] = useState<number>(currentEth.day);
+  const [ethEndMonth, setEthEndMonth] = useState<number>(currentEth.month);
+  const [ethEndYear, setEthEndYear] = useState<number>(currentEth.year);
+
+  const ethYears = useMemo(() => {
+    const cy = currentEth.year;
+    return [cy - 2, cy - 1, cy, cy + 1];
+  }, [currentEth.year]);
+
+  const startMaxDays = getEthiopianDaysInMonth(ethStartYear, ethStartMonth);
+  const endMaxDays = getEthiopianDaysInMonth(ethEndYear, ethEndMonth);
+
+  function applyEthiopianDateRange() {
+    const range = ethiopianRangeToGregorianISO(
+      { year: ethStartYear, month: ethStartMonth, day: Math.min(ethStartDay, startMaxDays) },
+      { year: ethEndYear, month: ethEndMonth, day: Math.min(ethEndDay, endMaxDays) }
+    );
+    setSelectedEthMonth(range.label);
+    setCustomStart(range.startISO);
+    setCustomEnd(range.endISO);
+    setHistoryFilter("custom");
+  }
+
+  function handleSelectEthMonth(monthObj: {
+    label: string;
+    startISO: string;
+    endISO: string;
+    ethYear: number;
+    ethMonth: number;
+  }) {
     setSelectedEthMonth(monthObj.label);
+    setEthStartYear(monthObj.ethYear);
+    setEthStartMonth(monthObj.ethMonth);
+    setEthStartDay(1);
+    setEthEndYear(monthObj.ethYear);
+    setEthEndMonth(monthObj.ethMonth);
+    setEthEndDay(getEthiopianDaysInMonth(monthObj.ethYear, monthObj.ethMonth));
     setCustomStart(monthObj.startISO);
     setCustomEnd(monthObj.endISO);
     setHistoryFilter("month");
@@ -1102,116 +1149,224 @@ function HistoryTab({
           </div>
         </div>
 
-        {/* High-Contrast Specific Date Picker */}
-        <div className="mt-3 rounded-xl border border-stone-200 bg-white p-3 shadow-xs">
+        {/* Ethiopian Calendar Custom Date Range Picker */}
+        <div className="mt-3 rounded-xl border border-stone-200 bg-white p-3 sm:p-3.5 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-stone-800">
-              📅 የተወሰነ ቀን (Specific Date Range)
+            <span className="text-xs font-black text-stone-900 flex items-center gap-1.5">
+              <span>📅</span>
+              <span>የተወሰነ ቀን በኢትዮጵያ ካላንደር (Filter Date Range - E.C.)</span>
             </span>
-            {(customStart || customEnd) && !selectedEthMonth && (
+            {(customStart || customEnd) && (
               <button
                 type="button"
                 onClick={() => handleQuickFilter("today")}
-                className="text-[11px] font-bold text-red-600 hover:text-red-700"
+                className="text-[11px] font-bold text-red-600 hover:text-red-700 transition"
               >
                 ✕ አጽዳ
               </button>
             )}
           </div>
 
-          <div className="mt-2 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="start-date" className="block text-[11px] font-bold text-stone-700">
-                ከቀን (Start Date)
-              </label>
-              <input
-                id="start-date"
-                type="date"
-                value={customStart.includes("T") ? customStart.split("T")[0] : customStart}
-                onChange={(e) => {
-                  setSelectedEthMonth("");
-                  setCustomStart(e.target.value);
-                  setHistoryFilter("custom");
-                }}
-                style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-bold !text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
-              />
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Start Date */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-2.5">
+              <span className="block text-[11px] font-bold text-stone-700 mb-1.5">
+                ከቀን (Start Date - E.C.)
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                <div>
+                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ቀን (Day)</label>
+                  <select
+                    value={ethStartDay}
+                    onChange={(e) => setEthStartDay(Number(e.target.value))}
+                    style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                  >
+                    {Array.from({ length: startMaxDays }, (_, i) => i + 1).map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ወር (Month)</label>
+                  <select
+                    value={ethStartMonth}
+                    onChange={(e) => setEthStartMonth(Number(e.target.value))}
+                    style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                  >
+                    {ETHIOPIAN_MONTHS.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ዓመት (Year)</label>
+                  <select
+                    value={ethStartYear}
+                    onChange={(e) => setEthStartYear(Number(e.target.value))}
+                    style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                  >
+                    {ethYears.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="end-date" className="block text-[11px] font-bold text-stone-700">
-                እስከ ቀን (End Date)
-              </label>
-              <input
-                id="end-date"
-                type="date"
-                value={customEnd.includes("T") ? customEnd.split("T")[0] : customEnd}
-                onChange={(e) => {
-                  setSelectedEthMonth("");
-                  setCustomEnd(e.target.value);
-                  setHistoryFilter("custom");
-                }}
-                style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
-                className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-xs font-bold !text-stone-900 shadow-xs outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900"
-              />
+            {/* End Date */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-2.5">
+              <span className="block text-[11px] font-bold text-stone-700 mb-1.5">
+                እስከ ቀን (End Date - E.C.)
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                <div>
+                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ቀን (Day)</label>
+                  <select
+                    value={ethEndDay}
+                    onChange={(e) => setEthEndDay(Number(e.target.value))}
+                    style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                  >
+                    {Array.from({ length: endMaxDays }, (_, i) => i + 1).map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ወር (Month)</label>
+                  <select
+                    value={ethEndMonth}
+                    onChange={(e) => setEthEndMonth(Number(e.target.value))}
+                    style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                  >
+                    {ETHIOPIAN_MONTHS.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] text-stone-500 font-bold block mb-0.5">ዓመት (Year)</label>
+                  <select
+                    value={ethEndYear}
+                    onChange={(e) => setEthEndYear(Number(e.target.value))}
+                    style={{ color: "#1c1917", backgroundColor: "#ffffff" }}
+                    className="w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-xs font-bold text-stone-900 shadow-xs outline-none"
+                  >
+                    {ethYears.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={applyEthiopianDateRange}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-stone-800 touch-manipulation active:scale-95"
+            >
+              <span>🔍</span>
+              <span>በዚህ ቀን አጣራ (Filter Sales)</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Monthly Performance KPI Summary Card (When Month is Selected) */}
+      {/* Monthly Performance KPI Summary Card (When Month or Custom Range is Selected) */}
       {selectedEthMonth ? (
-        <div className="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-4 shadow-sm">
-          <div className="flex items-center justify-between border-b border-amber-200/60 pb-2.5">
-            <div className="flex items-center gap-1.5">
-              <span className="text-lg">📊</span>
-              <h4 className="text-sm font-black text-amber-950">
-                {selectedEthMonth} የትርፍ እና ሽያጭ ማጠቃለያ
+        <div className="rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50 p-3.5 sm:p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-1.5 border-b border-amber-200/60 pb-2.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-base sm:text-lg shrink-0">📊</span>
+              <h4 className="text-xs sm:text-sm font-black text-amber-950 truncate">
+                {selectedEthMonth} ማጠቃለያ
               </h4>
             </div>
-            <span className="rounded-full bg-amber-200 px-2.5 py-0.5 text-[10px] font-black text-amber-900">
+            <span className="rounded-full bg-amber-200 px-2.5 py-0.5 text-[10px] font-black text-amber-900 shrink-0">
               ኢትዮጵያ ካላንደር
             </span>
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
-              <div className="text-[11px] font-bold text-stone-500">ወርሃዊ ትርፍ (Profit)</div>
-              <div className="mt-1 text-base sm:text-lg font-black text-green-700">
-                {historyLoading ? "..." : money.format(historyProfit)}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+            <div className="min-w-0 rounded-xl border border-amber-200/80 bg-white p-2.5 sm:p-3 shadow-xs overflow-hidden">
+              <div className="text-[10px] sm:text-[11px] font-bold text-stone-500 truncate" title="ወርሃዊ ትርፍ (Profit)">
+                ወርሃዊ ትርፍ (Profit)
+              </div>
+              <div
+                className="mt-1 font-black text-green-700 text-sm sm:text-base md:text-lg truncate tracking-tight"
+                title={money.format(historyProfit)}
+              >
+                {historyLoading ? "..." : money.format(Math.round(historyProfit))}
               </div>
             </div>
 
-            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
-              <div className="text-[11px] font-bold text-stone-500">ወርሃዊ ገቢ (Revenue)</div>
-              <div className="mt-1 text-base sm:text-lg font-black text-stone-900">
-                {historyLoading ? "..." : money.format(historyRevenue)}
+            <div className="min-w-0 rounded-xl border border-amber-200/80 bg-white p-2.5 sm:p-3 shadow-xs overflow-hidden">
+              <div className="text-[10px] sm:text-[11px] font-bold text-stone-500 truncate" title="ወርሃዊ ገቢ (Revenue)">
+                ወርሃዊ ገቢ (Revenue)
+              </div>
+              <div
+                className="mt-1 font-black text-stone-900 text-sm sm:text-base md:text-lg truncate tracking-tight"
+                title={money.format(historyRevenue)}
+              >
+                {historyLoading ? "..." : money.format(Math.round(historyRevenue))}
               </div>
             </div>
 
-            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
-              <div className="text-[11px] font-bold text-stone-500">የተሸጡ ምግቦች (Meals)</div>
-              <div className="mt-1 text-base sm:text-lg font-black text-stone-900">
+            <div className="min-w-0 rounded-xl border border-amber-200/80 bg-white p-2.5 sm:p-3 shadow-xs overflow-hidden">
+              <div className="text-[10px] sm:text-[11px] font-bold text-stone-500 truncate" title="የተሸጡ ምግቦች (Meals)">
+                የተሸጡ ምግቦች (Meals)
+              </div>
+              <div
+                className="mt-1 font-black text-stone-900 text-sm sm:text-base md:text-lg truncate tracking-tight"
+                title={`${historyMeals} ሳህን`}
+              >
                 {historyLoading ? "..." : `${historyMeals} ሳህን`}
               </div>
             </div>
 
-            <div className="rounded-xl border border-amber-200/80 bg-white p-3 shadow-xs">
-              <div className="text-[11px] font-bold text-stone-500">አማካይ የቀን ትርፍ (Avg/Day)</div>
-              <div className="mt-1 text-base sm:text-lg font-black text-amber-900">
+            <div className="min-w-0 rounded-xl border border-amber-200/80 bg-white p-2.5 sm:p-3 shadow-xs overflow-hidden">
+              <div className="text-[10px] sm:text-[11px] font-bold text-stone-500 truncate" title="አማካይ የቀን ትርፍ (Avg/Day)">
+                አማካይ/ቀን (Avg/Day)
+              </div>
+              <div
+                className="mt-1 font-black text-amber-900 text-sm sm:text-base md:text-lg truncate tracking-tight"
+                title={money.format(Math.round(historyProfit / 30))}
+              >
                 {historyLoading ? "..." : money.format(Math.round(historyProfit / 30))}
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-black text-stone-900">
+        <div className="rounded-2xl border border-stone-200 bg-white p-3.5 sm:p-4 shadow-xs overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2 min-w-0">
+            <div className="text-xs sm:text-sm font-black text-stone-900 truncate">
               {historyLoading ? "በማስላት ላይ..." : `${historyMeals} ምግቦች ተሽጠዋል`}
             </div>
-            <div className="text-sm font-black text-green-700">
-              {historyLoading ? "..." : `${money.format(historyProfit)} ትርፍ`}
+            <div className="text-xs sm:text-sm font-black text-green-700 truncate">
+              {historyLoading ? "..." : `${money.format(Math.round(historyProfit))} ትርፍ`}
             </div>
           </div>
         </div>

@@ -88,14 +88,25 @@ export async function POST(request: Request) {
       emailToAuth = authUser.user.email;
     }
 
-    // Verify the password using Supabase Auth
-    const { data: signInData, error: signInError } =
+    // Verify the password using Supabase Auth (tries raw password and normalized 4-digit password)
+    let { data: signInData, error: signInError } =
       await supabaseAdmin.auth.signInWithPassword({
         email: emailToAuth,
         password,
       });
 
-    if (signInError || !signInData.session) {
+    if (signInError && typeof password === "string" && password.length < 6) {
+      const retry = await supabaseAdmin.auth.signInWithPassword({
+        email: emailToAuth,
+        password: `${password}_liyu_pin`,
+      });
+      if (!retry.error && retry.data?.session) {
+        signInData = retry.data;
+        signInError = null;
+      }
+    }
+
+    if (signInError || !signInData?.session) {
       return NextResponse.json(
         { error: "Invalid phone number or password." },
         { status: 401 }

@@ -110,9 +110,14 @@ export default async function EditProductPage({
 
             <div>
               <label className="mb-2 block text-sm font-medium text-stone-700">
-                Image URL
+                Image URL <span className="text-xs font-normal text-stone-400">(አማራጭ / Optional)</span>
               </label>
-              <input name="image_url" defaultValue={product.image_url || ""} className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10" />
+              <input
+                name="image_url"
+                defaultValue={product.image_url || ""}
+                placeholder="https://... ወይም ባዶ ይተዉት (optional)"
+                className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10"
+              />
             </div>
 
             <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-600">
